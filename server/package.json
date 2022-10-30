@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "-": "^0.0.1",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "express-promise-router": "^4.1.1"
   }
 }
