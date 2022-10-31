@@ -1,8 +1,8 @@
 import Router from 'express-promise-router';
 const router = Router();
 
-router.get('/', (req, res) => {
-    res.send({data: 'user'});
-});
+const { GetAllUsers } = require("../controllers/UserController");
+
+router.get('/', GetAllUsers);
 
 module.exports = router;
