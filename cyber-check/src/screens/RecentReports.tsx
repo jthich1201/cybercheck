@@ -62,24 +62,30 @@ const RecentReportsTab = () => {
   };
 
   return (
-    <View style={{ alignItems: "center" }}>
-      <SearchBar
-        clicked={searchPhrase}
-        searchPhrase={setSearchPhrase}
-        setSearchPhrase={clicked}
-        setClicked={setClicked}
-      ></SearchBar>
-      <View style={{ justifyContent: "center", alignItems: "center" }}>
-        <FlatList
-          data={DATA}
-          columnWrapperStyle={styles.row}
-          numColumns={2}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          extraData={selectedId}
-        />
+    <>
+      <View style={{ alignItems: "center" }}>
+        <SearchBar
+          clicked={searchPhrase}
+          searchPhrase={setSearchPhrase}
+          setSearchPhrase={clicked}
+          setClicked={setClicked}
+        ></SearchBar>
+        <View style={{ justifyContent: "center", alignItems: "center" }}>
+          <FlatList
+            data={DATA}
+            columnWrapperStyle={styles.row}
+            numColumns={2}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            extraData={selectedId}
+          />
+        </View>
       </View>
-    </View>
+      <Tab.Navigator>
+        <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen name="Recent Reports" component={RecentReportsTab} />
+      </Tab.Navigator>
+    </>
   );
 };
 
