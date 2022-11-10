@@ -43,7 +43,12 @@ const SignIn = ({ navigation }: Props) => {
         </View>
         <Pressable
           style={styles.button}
-          onPress={() => navigation.navigate("Backend", { email: userEmail })}
+          onPress={() => {
+            navigation.navigate("RecentReportsTab", {
+              screen: "Home",
+              params: { email: userEmail },
+            });
+          }}
         >
           <Text style={styles.buttonText}>Sign In</Text>
         </Pressable>
