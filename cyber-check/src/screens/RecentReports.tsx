@@ -27,6 +27,7 @@ const Tab = createBottomTabNavigator();
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
+
 const RecentReportsTab = () => {
   const [searchPhrase, setSearchPhrase] = useState("");
   const [clicked, setClicked] = useState(false);
