@@ -58,6 +58,13 @@ const App = () => {
               headerShown: false,
             }}
           />
+          <Stack.Screen
+            name="ReportTasks"
+            component={ReportTasks}
+            options={{
+              headerShown: false,
+            }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </>
