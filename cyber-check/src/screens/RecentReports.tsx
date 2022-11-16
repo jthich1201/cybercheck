@@ -27,7 +27,6 @@ const Tab = createBottomTabNavigator();
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-
 const RecentReportsTab = () => {
   const [searchPhrase, setSearchPhrase] = useState("");
   const [clicked, setClicked] = useState(false);
@@ -194,6 +193,12 @@ const DATA = [
 ];
 
 const styles = StyleSheet.create({
+  navigationBar:{
+    backgroundColor: "grey",
+    flex: .3,
+    padding: 20,
+    flexDirection: "row",
+  },
   container: {
     flex: 1.3,
     backgroundColor: "#fff",
