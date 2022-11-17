@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -91,6 +91,9 @@ const ReportTasks = ({ route, navigation }: Props) => {
               </View>
             );
           })}
+          <TouchableOpacity onPress={printTaskList}>
+            <Text>Button</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
       <View style={styles.taskCountContainer}>
