@@ -16,7 +16,7 @@ const RecentReportsTab = () => {
 const RecentReportsScreen = () => {
   return (
     <Tab.Navigator>
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Recent Reports" component={RecentReportsTab} />
     </Tab.Navigator>
   );
