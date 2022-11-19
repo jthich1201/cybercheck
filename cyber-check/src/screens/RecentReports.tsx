@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { View, Text } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Dimensions, Pressable} from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Icon } from "@rneui/base";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+type RootStackParamList = {};
+
+type Props = NativeStackScreenProps<RootStackParamList>;
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import {
-  SafeAreaView,
   FlatList,
   TouchableOpacity,
   StyleSheet,
@@ -13,6 +19,9 @@ import {
 import Home from "./Home";
 import SearchBar from "../components/searchbar";
 const Tab = createBottomTabNavigator();
+
+const windowWidth = Dimensions.get("window").width;
+const windowHeight = Dimensions.get("window").height;
 
 const RecentReportsTab = () => {
   const [searchPhrase, setSearchPhrase] = useState("");
@@ -71,6 +80,67 @@ const RecentReportsTab = () => {
   );
 };
 
+const RecentReportsScreen = ({ navigation }: Props) => (
+  <><SafeAreaView style={[
+    styles.container]}>
+      <View style={styles.navigationBar}>
+        <View style={{flex: 1, justifyContent: "center", alignItems: "flex-start"}}> 
+          <TouchableOpacity onPress={() => navigation.navigate("ManageAccount")}>
+            <Icon name="settings" type="material"></Icon>
+          </TouchableOpacity>
+        </View>
+        <View style={{flex: 1, alignItems: "center", justifyContent: "center"}}> 
+          <Text style={{fontSize: 30}}> Recent Reports </Text>
+        </View> 
+        <View style={{flex: 1, alignItems: "flex-end", justifyContent: "center"}}>
+          <TouchableOpacity //onPress={() => navigation.navigate("RecentReportsTab")}
+          >
+            <Icon name="tab" type="material"> </Icon>
+          </TouchableOpacity>
+        </View>
+      </View> 
+
+    <View style={{ flex: 6 }}>
+    <Tab.Navigator>
+      <Tab.Screen
+        name="Home"
+        component={Home}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="home" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Recent Reports"
+        component={RecentReportsTab}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="file-document"
+              color={color}
+              size={size}
+            />
+          ),
+
+          title: "Recent Reports",
+          headerTitleAlign: "center",
+          headerStyle: {
+            backgroundColor: "#fff",
+          },
+          headerTintColor: "#000000",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+        }}
+      />
+    </Tab.Navigator>
+    </View>
+    </SafeAreaView>
+</>
+
+);
+
 const DATA = [
   {
     id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
@@ -117,10 +187,36 @@ const DATA = [
     title: "Eleventh Report",
   },
 ];
+
 const styles = StyleSheet.create({
+  navigationBar:{
+    backgroundColor: "grey",
+    flex: .3,
+    padding: 20,
+    flexDirection: "row",
+  },
   container: {
-    flex: 1,
-    marginTop: StatusBar.currentHeight || 0,
+    flex: 1
+  },
+  button: {
+    backgroundColor: "#007AFF",
+    padding: 10,
+    alignItems: "center",
+    borderRadius: 10,
+    boxShadow: "20px 20px 205px red",
+    elevation: 4,
+    width: windowWidth * 0.8,
+    height: 50,
+    shadowOffset: { width: -2, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    marginTop: windowHeight * 0.4,
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold",
+    // fontFamily: "Poppins",
   },
   item: {
     backgroundColor: "#D3D3D3",
@@ -137,44 +233,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-around",
   },
-});
-const RecentReportsScreen = () => {
-  return (
-    <Tab.Navigator>
-      <Tab.Screen
-        name="Home"
-        component={Home}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Recent Reports"
-        component={RecentReportsTab}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="file-document"
-              color={color}
-              size={size}
-            />
-          ),
+  Nav:{
+    
+  }
 
-          title: "Recent Reports",
-          headerTitleAlign: "center",
-          headerStyle: {
-            backgroundColor: "#fff",
-          },
-          headerTintColor: "#000000",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
-        }}
-      />
-    </Tab.Navigator>
-  );
-};
+});
 
 export default RecentReportsScreen;

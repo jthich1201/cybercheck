@@ -3,6 +3,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import Signin from "./src/screens/SignIn";
 import RecentReportsScreen from "./src/screens/RecentReports";
+import ManageAccount from "./src/screens/ManageAccount";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +23,14 @@ const App = () => {
           <Stack.Screen
             name="RecentReportsTab"
             component={RecentReportsScreen}
+            options={{
+              headerShown: false,
+              gestureEnabled: true
+            }}
+          />
+          <Stack.Screen
+            name="ManageAccount"
+            component={ManageAccount}
             options={{
               headerShown: false,
             }}
