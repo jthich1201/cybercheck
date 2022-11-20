@@ -1,22 +1,15 @@
-<<<<<<< HEAD
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-=======
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import Quiz from './src/screens/Quiz';
->>>>>>> implemented questionnaire interface and created questions model
 
 import Signin from "./src/screens/SignIn";
 import RecentReportsScreen from "./src/screens/RecentReports";
 import ManageAccount from "./src/screens/ManageAccount";
-
-
+import SelectIncident from "./src/screens/SelectIncident";
+import Quiz from "./src/screens/Quiz";
 const Stack = createNativeStackNavigator();
 
 const App = () => {
   return (
-<<<<<<< HEAD
     <>
       <NavigationContainer>
         <Stack.Navigator>
@@ -32,7 +25,7 @@ const App = () => {
             component={RecentReportsScreen}
             options={{
               headerShown: false,
-              gestureEnabled: true
+              gestureEnabled: true,
             }}
           />
           <Stack.Screen
@@ -42,18 +35,23 @@ const App = () => {
               headerShown: false,
             }}
           />
+          <Stack.Screen
+            name="SelectIncident"
+            component={SelectIncident}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="Quiz"
+            component={Quiz}
+            options={{
+              headerShown: false,
+            }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </>
-=======
-    // <View style={styles.container}>
-    //   <Text>Open up App.tsx to start working on your app!</Text>
-    //   <StatusBar style="auto" /> 
-      <Quiz></Quiz>
-
-    /* </View> */
-  
->>>>>>> implemented questionnaire interface and created questions model
   );
 };
 
