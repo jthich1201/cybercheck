@@ -57,7 +57,10 @@ const Option = (props: {
   );
 };
 
-const Quiz = ({ navigation }: Props) => {
+const Quiz = ({ route, navigation }: Props) => {
+  let { reportName } = route.params;
+  reportName = reportName.length > 0 ? reportName : "New Report";
+
   const [index, setIndex] = useState(0);
   const [isComplete, setComplete] = useState(false);
   const [nextQuestionId, setNextQuestionId] = useState(0);
@@ -67,12 +70,20 @@ const Quiz = ({ navigation }: Props) => {
   useEffect(() => {});
 
   const handleNextPress = () => {
+    if (isComplete) {
+      navigation.navigate("ReportTasks", { reportName });
+    }
     if (nextQuestionId != -1) {
       setNextButtonVisibility(false);
       setIndex(nextQuestionId);
     }
   };
-  const handlePrevPress = () => {};
+  const handlePrevPress = () => {
+    if (index != 0) {
+      setIndex(index - 1);
+    }
+    console.log(`Next question id: ${nextQuestionId} && index: ${index}`);
+  };
   const handleOptionPress = (
     option: { [x: string]: string },
     questionId: any,
@@ -126,9 +137,16 @@ const Quiz = ({ navigation }: Props) => {
         <Pressable onPress={() => navigation.navigate("SelectIncident")}>
           <Icon name="arrow-back-ios" type="material"></Icon>
         </Pressable>
-        <Text style={styles.header}>Create New{"\n"}Report</Text>
-        <Pressable onPress={() => navigation.navigate("Quiz")}>
-          <Icon name="arrow-forward-ios" type="material"></Icon>
+        <Text style={styles.header}>{reportName}</Text>
+        <Pressable
+          onPress={() => navigation.navigate("ReportTasks", { reportName })}
+          disabled={!isComplete ? true : false}
+        >
+          <Icon
+            name="arrow-forward-ios"
+            type="material"
+            color={isComplete ? "black" : "white"}
+          ></Icon>
         </Pressable>
       </View>
       <View style={styles.contentContainer}>
@@ -153,16 +171,25 @@ const Quiz = ({ navigation }: Props) => {
             />
           ))}
         </View>
-        <View style={styles.bottom}>
-          <TouchableOpacity
-            style={styles.navigateButton}
-            onPress={handlePrevPress}
-          >
-            <Text style={styles.navigateText}>Previous</Text>
-          </TouchableOpacity>
-          {isNextButtonVisible && (
+        <View
+          style={[
+            styles.bottom,
+            {
+              justifyContent: index == 0 ? "flex-end" : "space-between",
+            },
+          ]}
+        >
+          {index != 0 && (
             <TouchableOpacity
               style={styles.navigateButton}
+              onPress={handlePrevPress}
+            >
+              <Text style={styles.navigateText}>Previous</Text>
+            </TouchableOpacity>
+          )}
+          {isNextButtonVisible && (
+            <TouchableOpacity
+              style={[styles.navigateButton]}
               onPress={handleNextPress}
             >
               <Text style={styles.navigateText}>
@@ -209,7 +236,6 @@ const styles = StyleSheet.create({
   },
   questionContainer: {
     flex: 3,
-    // borderWidth: 2.5,
     height: height * 0.3,
     marginBottom: 20,
     paddingVertical: 10,
@@ -230,7 +256,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
   optionButtonSelected: {
-    backgroundColor: "#cadb2a",
+    backgroundColor: "rgba(0, 122, 255, 0.50)",
     height: height * 0.08,
     marginVertical: 7,
     paddingVertical: 10,
@@ -248,7 +274,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   navigateButton: {
-    backgroundColor: "#009d7a",
+    backgroundColor: "#007AFF",
     width: width * 0.25,
     justifyContent: "center",
     borderRadius: 15,
@@ -256,7 +282,7 @@ const styles = StyleSheet.create({
   },
   navigateText: {
     color: "white",
-    fontSize: 15,
+    fontSize: 18,
   },
 });
 export default Quiz;

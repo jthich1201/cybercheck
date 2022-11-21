@@ -8,11 +8,13 @@ import {
   Platform,
   StatusBar,
   Pressable,
+  TextInput,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { IncidentOptions } from "../constants/IncidentOptions";
 import { Dropdown } from "react-native-element-dropdown";
 import { Icon } from "@rneui/base";
+import { scale } from "react-native-size-matters";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -22,10 +24,13 @@ type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 const SelectIncident = ({ navigation }: Props) => {
-  const [selectedIncident, setSelectedIncident] = useState(0);
+  const [selectedIncident, setSelectedIncident] = useState(-1);
+  const [reportName, setReportName] = useState("");
 
   const getSelectedIncident = (selectedIncident: number) => {
-    return IncidentOptions[selectedIncident].label;
+    return selectedIncident != -1
+      ? IncidentOptions[selectedIncident].label
+      : "Null";
   };
 
   console.log(getSelectedIncident(selectedIncident));
@@ -44,8 +49,18 @@ const SelectIncident = ({ navigation }: Props) => {
           <Icon name="arrow-back-ios" type="material"></Icon>
         </Pressable>
         <Text style={styles.header}>Create New{"\n"}Report</Text>
-        <Pressable onPress={() => navigation.navigate("Quiz")}>
-          <Icon name="arrow-forward-ios" type="material"></Icon>
+        <Pressable
+          onPress={() => {
+            console.log(reportName);
+            navigation.navigate("Quiz", { reportName });
+          }}
+          disabled={selectedIncident == -1 ? true : false}
+        >
+          <Icon
+            name="arrow-forward-ios"
+            type="material"
+            color={selectedIncident == -1 ? "white" : "black"}
+          ></Icon>
         </Pressable>
       </View>
       <View style={styles.incidentContainer}>
@@ -67,6 +82,14 @@ const SelectIncident = ({ navigation }: Props) => {
             setSelectedIncident(item.value);
           }}
         />
+      </View>
+      <View style={styles.dropdownContainer}>
+        <TextInput
+          style={styles.input}
+          onChangeText={(input) => setReportName(input)}
+          placeholder="Enter Report Name"
+          value={reportName}
+        ></TextInput>
       </View>
     </SafeAreaView>
   );
@@ -122,6 +145,17 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 20,
     fontWeight: "bold",
+  },
+  input: {
+    marginTop: 50,
+    padding: 10,
+    borderWidth: 1,
+    borderRadius: 10,
+    minWidth: windowWidth * 0.8,
+    height: 50,
+    fontSize: 20,
+    fontWeight: "bold",
+    backgroundColor: "rgba(217, 217, 217, 0.25)",
   },
 });
 

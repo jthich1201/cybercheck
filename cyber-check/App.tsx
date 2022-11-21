@@ -6,6 +6,8 @@ import RecentReportsScreen from "./src/screens/RecentReports";
 import ManageAccount from "./src/screens/ManageAccount";
 import SelectIncident from "./src/screens/SelectIncident";
 import Quiz from "./src/screens/Quiz";
+import ReportTasks from "./src/screens/ReportTasks";
+
 const Stack = createNativeStackNavigator();
 
 const App = () => {
@@ -45,6 +47,13 @@ const App = () => {
           <Stack.Screen
             name="Quiz"
             component={Quiz}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="ReportTasks"
+            component={ReportTasks}
             options={{
               headerShown: false,
             }}

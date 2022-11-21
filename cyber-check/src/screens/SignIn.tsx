@@ -108,33 +108,6 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     float: "left",
   },
-  // boxShadow: {
-  //   paddingTop: 140,
-  // },
 });
-
-// const generateBoxShadowStyle = (
-//   xOffset: any,
-//   yOffset: any,
-//   shadowColorIos: any,
-//   shadowOpacity: any,
-//   shadowRadius: any,
-//   elevation: any,
-//   shadowColorAndroid: any
-// ) => {
-//   if (Platform.OS === "ios") {
-//     styles.boxShadow = {
-//       shadowColor: shadowColorIos,
-//       shadowOffset: { width: xOffset, height: yOffset },
-//       shadowOpacity,
-//       shadowRadius,
-//     };
-//   } else if (Platform.OS === "android") {
-//     styles.boxShadow = {
-//       elevation,
-//       shadowColor: shadowColorAndroid,
-//     };
-//   }
-// };
 
 export default SignIn;
