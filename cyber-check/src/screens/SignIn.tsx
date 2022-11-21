@@ -44,7 +44,10 @@ const SignIn = ({ navigation }: Props) => {
         <Pressable
           style={styles.button}
           onPress={() => {
-            navigation.navigate("RecentReportsTab", { });
+            navigation.navigate("RecentReportsTab", {
+              screen: "Home",
+              params: { email: userEmail },
+            });
           }}
         >
           <Text style={styles.buttonText}>Sign In</Text>
@@ -55,7 +58,6 @@ const SignIn = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-  
   container: {
     flex: 1,
     backgroundColor: "#fff",

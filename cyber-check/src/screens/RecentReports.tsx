@@ -62,30 +62,24 @@ const RecentReportsTab = () => {
   };
 
   return (
-    <>
-      <View style={{ alignItems: "center" }}>
-        <SearchBar
-          clicked={searchPhrase}
-          searchPhrase={setSearchPhrase}
-          setSearchPhrase={clicked}
-          setClicked={setClicked}
-        ></SearchBar>
-        <View style={{ justifyContent: "center", alignItems: "center" }}>
-          <FlatList
-            data={DATA}
-            columnWrapperStyle={styles.row}
-            numColumns={2}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            extraData={selectedId}
-          />
-        </View>
+    <View style={{ alignItems: "center" }}>
+      <SearchBar
+        clicked={searchPhrase}
+        searchPhrase={setSearchPhrase}
+        setSearchPhrase={clicked}
+        setClicked={setClicked}
+      ></SearchBar>
+      <View style={{ justifyContent: "center", alignItems: "center" }}>
+        <FlatList
+          data={DATA}
+          columnWrapperStyle={styles.row}
+          numColumns={2}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          extraData={selectedId}
+        />
       </View>
-      <Tab.Navigator>
-        <Tab.Screen name="Home" component={Home} />
-        <Tab.Screen name="Recent Reports" component={RecentReportsTab} />
-      </Tab.Navigator>
-    </>
+    </View>
   );
 };
 
@@ -193,12 +187,6 @@ const DATA = [
 ];
 
 const styles = StyleSheet.create({
-  navigationBar:{
-    backgroundColor: "grey",
-    flex: .3,
-    padding: 20,
-    flexDirection: "row",
-  },
   container: {
     flex: 1.3,
     backgroundColor: "#fff",
