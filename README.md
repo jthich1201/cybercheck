@@ -22,7 +22,7 @@ Backend: While we have set-up the backend server, the only active endpoints are 
 We will begin deployment next semester once we have developed an MVP. We will be hosting the database and backend on an AWS EC2 VM. We will need to conduct additional research to determine what we need to do in order to publish our application to the Google Play/iOS App Store.
 
 <h3>Developer Instructions</h3>
-Ensure Node.js is installed. To run the application, navigate to the front-end's root directory (cybercheck/cyber-check) and run the following commands in the terminal:
+Ensure Node.js is installed and the repo is cloned. To run the application, navigate to the front-end's root directory (cybercheck/cyber-check) and run the following commands in the terminal:
   
 ```
 npm i
