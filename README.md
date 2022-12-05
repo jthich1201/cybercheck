@@ -38,8 +38,7 @@ Since we the backend is not linked and has no current interaction with the front
 
 <h3>UI Demo</h3>
   
-<iframe width="560" height="315" src="https://www.youtube.com/embed/UfhZWyWie5E" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
+https://user-images.githubusercontent.com/51312849/205562514-442ed8a3-b04a-48d6-a969-07eccaa40926.mp4
 
 <h3>Prototypes</h3>
 <a href="https://ibb.co/cDF5NTt"><img src="https://i.ibb.co/9sTXqY2/0001.jpg" alt="0001" border="0" height="500"></a>
