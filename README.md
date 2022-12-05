@@ -26,7 +26,9 @@ Ensure Node.js and Expo CLI are installed. To run the application, navigate to t
 ```
 npm i
 ```
+  
 followed by
+
 ```
 npm start
 ```
