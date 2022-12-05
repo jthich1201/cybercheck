@@ -23,6 +23,7 @@ We will begin deployment next semester once we have developed an MVP. We will be
 
 <h3>Developer Instructions</h3>
 Ensure Node.js and Expo CLI are installed. To run the application, navigate to the front-end's root directory (cybercheck/cyber-check) and run the following commands in the terminal:
+  
 ```
 npm i
 ```
