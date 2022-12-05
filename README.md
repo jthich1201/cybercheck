@@ -7,9 +7,9 @@
 <br>
 </div>
 
-<div align="">
+<div>
 <h1>Cyber Check
-<img src="https://i.ibb.co/Qcjmth5/cc.png" height=80 style="float: right;">
+<img src="https://i.ibb.co/Qcjmth5/cc.png" height=80 align="right">
 </h1>
 <h3>Synopsis</h3>
 This project involves the development of a mobile application to support the client’s security incident response process. The app we develop would help our client’s customers to recover more quickly from a security threat by allowing them to view and update a collaborative checklist, accessible to anyone relevant from their organization. Most importantly, it will have logging features that will allow the user to document their actions taken to resolve the issue. It would include a list of action items to test and update the system after recovery. Not only will this application help with incident response, but it will list steps to set up preventative measures in order to avoid the situation from occurring again. It will also make exporting easy if there is a need to share with third parties.
