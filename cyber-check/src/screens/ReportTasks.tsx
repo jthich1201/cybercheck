@@ -85,8 +85,15 @@ const ReportTasks = ({ route, navigation }: Props) => {
                   getCheckboxStatus={getCheckboxStatus}
                   taskId={task.TaskId}
                 />
-                <TouchableOpacity onPress={()=> navigation.navigate("ReportDescription", {reportName})} style={styles.taskTextContainer}>
-                  
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("ReportDescription", {
+                      reportName,
+                      task,
+                    })
+                  }
+                  style={styles.taskTextContainer}
+                >
                   <Text style={styles.taskText}>{task.TaskName}</Text>
                 </TouchableOpacity>
               </View>
