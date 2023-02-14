@@ -3,6 +3,9 @@ import { StyleSheet, View, Text, Pressable, Dimensions } from "react-native";
 import { useFonts } from "expo-font";
 import { Input, CheckBox } from "@rneui/themed";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { FlipInEasyX } from "react-native-reanimated";
+import { Icon } from "@rneui/base";
+import FAIcon from 'react-native-vector-icons/FontAwesome';
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -19,66 +22,128 @@ const SignIn = ({ navigation }: Props) => {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.header}>Sign in with SSO</Text>
-      </View>
-      <View style={styles.signInContainer}>
-        <Input
-          style={styles.input}
-          onChangeText={(value) => {
-            setUserEmail(value);
-            console.log(userEmail);
-          }}
-          placeholder="Enter Your Email Address"
-          value={userEmail}
-          leftIcon={{ type: "material", name: "email" }}
+        <Icon 
+          name="closed-caption" 
+          type="material"
+          color='#007AFF'
+          size={70}
         />
-        <View>
-          <CheckBox
-            title="Remember Me"
-            checked={saveUser}
-            onPress={() => setSaveUser(!saveUser)}
-            checkedColor="#007AFF"
-            wrapperStyle={styles.checkBox}
-          />
-        </View>
-        <Pressable
-          style={styles.button}
-          onPress={() => {
-            navigation.navigate("RecentReportsTab", {
-              screen: "Home",
-              params: { email: userEmail },
-            });
-          }}
-        >
-          <Text style={styles.buttonText}>Sign In</Text>
-        </Pressable>
+        
+        <Text style={styles.headerText}>Welcome to    {'\n'}Cyber Checklist    </Text>
       </View>
+
+      <Text style={styles.title}>Sign in with Your Organization</Text>
+
+      <View style={styles.signInContainer}>
+    
+        <View style={styles.googleSignInContainer}>
+          <Pressable
+            style={styles.button}
+            onPress={() => {
+              navigation.navigate("RecentReportsTab", {
+                screen: "Home",
+                params: { email: userEmail },
+              });
+            }}
+          >
+            <FAIcon 
+                  name="google" 
+                  color='#FFFFFF'
+                  size={25}
+            />
+
+            <Text style={styles.buttonText}>{'\t'}Sign in with Google</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.microsoftSignInContainer}>
+          <Pressable
+            style={styles.button}
+            onPress={() => {
+              navigation.navigate("RecentReportsTab", {
+                screen: "Home",
+                params: { email: userEmail },
+              });
+            }}
+          >
+            <FAIcon 
+                  name="windows" 
+                  color='#FFFFFF'
+                  size={25}
+            />
+            <Text style={styles.buttonText}>{'\t'}Sign in with Microsoft</Text>
+          </Pressable>
+        </View>
+
+      </View>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Already have an account? {'\n'}Sign In</Text>
+      </View>
+
     </View>
+
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: "column",
+    maxHeight: windowHeight,
+    maxWidth: windowWidth,
     backgroundColor: "#fff",
+    // paddingBottom: 100,
   },
   headerContainer: {
-    paddingTop: 140,
-    alignItems: "flex-start",
-    justifyContent: "space-evenly",
+    // flex: 1,
+    flexDirection: "row",
+    paddingTop: 50,
+    alignItems: "flex-end",
+    paddingLeft: 25,
+    // justifyContent: "flex-end"
+    // paddingBottom: 50,
     backgroundColor: "#fff",
   },
-  header: {
+  headerText: {
+    flex: 1,
     color: "black",
     fontWeight: "bold",
-    // fontFamily: "Poppins",
-    fontSize: 45,
+    fontSize: 25,
+    paddingRight: 15,
+    // alignItem: "center",
+    textAlign: "right",
+    // lineHeight: 30
+    backgroundColor: "#fff",
+  },
+  title: {
+    flex: 1,
+    color: "black",
+    fontWeight: "bold",
+    fontSize: 40,
+    backgroundColor: "#fff",
+    alignItem: "center",
+    textAlign: "center",
+    paddingTop: 40,
   },
   signInContainer: {
-    paddingTop: 50,
+    flex: 2,
+    flexDirection: "column",
+    backgroundColor: "#fff",
+  },
+  googleSignInContainer: {
+    // flex: 1,
+    paddingTop: 20,
+    paddingBottom: 20,
     backgroundColor: "#fff",
     alignItems: "center",
-    justifyContent: "center",
+  },
+  microsoftSignInContainer: {
+    // flex: 1,
+    paddingTop: 20,
+    paddingBottom: 20,
+    backgroundColor: "#fff",
+    alignItems: "center",
   },
   input: {
     padding: 10,
@@ -96,18 +161,38 @@ const styles = StyleSheet.create({
     shadowOffset: { width: -2, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
-    marginTop: windowHeight * 0.4,
+    marginTop: 10,
+    marginBottom: 10,
+    flexDirection: "row"
   },
   buttonText: {
     color: "white",
     fontSize: 20,
     fontWeight: "bold",
-    // fontFamily: "Poppins",
   },
-  checkBox: {
-    alignSelf: "flex-start",
-    float: "left",
+  separator: {
+    height: 25
   },
+  footer: {
+    flex: 1,
+    backgroundColor: "#fff"
+  },
+  footerText: {
+    flex: 1,
+    color: "black",
+    fontWeight: "bold",
+    fontSize: 25,
+    // paddingTop: 100,
+    // paddingBottom: 100,
+    // alignItem: "center",
+    // justifyContent: "center",
+    textAlign: "center",
+    // lineHeight: 30
+    backgroundColor: "#fff",
+  }
+  // boxShadow: {
+  //   paddingTop: 140,
+  // },
 });
 
 export default SignIn;
