@@ -14,6 +14,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
 import { TaskList } from "../constants/taskList";
 import Checkbox from "../components/Checkbox";
+import { scale } from "react-native-size-matters";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -99,9 +100,6 @@ const ReportTasks = ({ route, navigation }: Props) => {
               </View>
             );
           })}
-          <TouchableOpacity onPress={printTaskList}>
-            <Text>Button</Text>
-          </TouchableOpacity>
         </View>
       </SafeAreaView>
       <View style={styles.taskCountContainer}>
