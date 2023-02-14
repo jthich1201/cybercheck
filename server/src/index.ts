@@ -1,4 +1,5 @@
 import express, { Express, Request, Response } from 'express';
+import passport from 'passport';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -7,6 +8,12 @@ const app: Express = express();
 const port = process.env.PORT;
 app.use(express.json());
 
+// Initialize Passport
+app.use(passport.initialize());
+
+const ssoRoutes = require("./routes/ssoRoutes");
+
+app.use('/', ssoRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send({data: 'cyber CHECK'});
