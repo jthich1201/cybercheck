@@ -74,7 +74,11 @@ const ReportTasks = ({ route, navigation }: Props) => {
             <Icon name="arrow-back-ios" type="material"></Icon>
           </Pressable>
           <Text style={styles.header}>{reportName}</Text>
-          <Pressable onPress={() => navigation.navigate("")} disabled={true}>
+          <Pressable
+            onPress={() =>
+              navigation.navigate("TaskDescription", { reportName })
+            }
+          >
             <Icon name="arrow-forward-ios" type="material"></Icon>
           </Pressable>
         </View>
@@ -88,7 +92,7 @@ const ReportTasks = ({ route, navigation }: Props) => {
                 />
                 <TouchableOpacity
                   onPress={() =>
-                    navigation.navigate("ReportDescription", {
+                    navigation.navigate("TaskComment", {
                       reportName,
                       task,
                     })

@@ -19,7 +19,7 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-const ReportDescription = ({ navigation, route }: Props) => {
+const TaskComment = ({ navigation, route }: Props) => {
   let { reportName } = route.params;
   let { task } = route.params;
   const [inputText, setInputText] = useState("");
@@ -159,4 +159,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ReportDescription;
+export default TaskComment;
