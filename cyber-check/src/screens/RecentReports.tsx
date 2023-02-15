@@ -15,14 +15,15 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 // import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
-type RootStackParamList = {};
-
-type Props = NativeStackScreenProps<RootStackParamList>;
 import { StatusBar } from "react-native";
 
 import Home from "./Home";
 import SearchBar from "../components/SearchBar";
+import TeamCollab from "./TeamCollab";
 const Tab = createBottomTabNavigator();
+type RootStackParamList = {};
+type Props = NativeStackScreenProps<RootStackParamList>;
+
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -122,7 +123,7 @@ const RecentReportsScreen = ({ navigation }: Props) => (
             options={{
               headerShown: false,
               tabBarIcon: ({ color, size }) => (
-                <MaterialCommunityIcons name="home" color={color} size={size} />
+                <Icon name="home" color={color} size={size} />
               ),
             }}
           />
@@ -131,6 +132,14 @@ const RecentReportsScreen = ({ navigation }: Props) => (
             component={RecentReportsTab}
             options={{
               headerShown: false,
+              tabBarIcon: ({ color, size }) => (
+                <Icon
+                  name="file-outline"
+                  color={color}
+                  size={size}
+                  type="material-community"
+                ></Icon>
+              ),
             }}
           />
         </Tab.Navigator>

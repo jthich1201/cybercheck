@@ -52,7 +52,7 @@ const SelectIncident = ({ navigation }: Props) => {
         <Pressable
           onPress={() => {
             console.log(reportName);
-            navigation.navigate("Quiz", { reportName });
+            navigation.navigate("TeamCollab", { reportName });
           }}
           disabled={selectedIncident == -1 ? true : false}
         >
@@ -158,5 +158,4 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(217, 217, 217, 0.25)",
   },
 });
-
 export default SelectIncident;

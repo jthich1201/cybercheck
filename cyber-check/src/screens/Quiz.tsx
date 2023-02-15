@@ -134,7 +134,9 @@ const Quiz = ({ route, navigation }: Props) => {
       ]}
     >
       <View style={styles.headerContainer}>
-        <Pressable onPress={() => navigation.navigate("SelectIncident")}>
+        <Pressable
+          onPress={() => navigation.navigate("TeamCollab", { reportName })}
+        >
           <Icon name="arrow-back-ios" type="material"></Icon>
         </Pressable>
         <Text style={styles.header}>{reportName}</Text>

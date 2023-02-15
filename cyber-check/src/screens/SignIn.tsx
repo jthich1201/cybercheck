@@ -5,7 +5,7 @@ import { Input, CheckBox } from "@rneui/themed";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { FlipInEasyX } from "react-native-reanimated";
 import { Icon } from "@rneui/base";
-import FAIcon from 'react-native-vector-icons/FontAwesome';
+import FAIcon from "react-native-vector-icons/FontAwesome";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -22,20 +22,14 @@ const SignIn = ({ navigation }: Props) => {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Icon 
-          name="closed-caption" 
-          type="material"
-          color='#007AFF'
-          size={70}
-        />
-        
-        <Text style={styles.headerText}>Welcome to    {'\n'}Cyber Checklist    </Text>
+        <Icon name="closed-caption" type="material" color="#007AFF" size={70} />
+
+        <Text style={styles.headerText}>Welcome to {"\n"}Cyber Checklist </Text>
       </View>
 
       <Text style={styles.title}>Sign in with Your Organization</Text>
 
       <View style={styles.signInContainer}>
-    
         <View style={styles.googleSignInContainer}>
           <Pressable
             style={styles.button}
@@ -46,16 +40,10 @@ const SignIn = ({ navigation }: Props) => {
               });
             }}
           >
-            <FAIcon 
-                  name="google" 
-                  color='#FFFFFF'
-                  size={25}
-            />
-
-            <Text style={styles.buttonText}>{'\t'}Sign in with Google</Text>
+            <FAIcon name="google" color="#FFFFFF" size={25} />
+            <Text style={styles.buttonText}>{"\t"}Sign in with Google</Text>
           </Pressable>
         </View>
-
         <View style={styles.microsoftSignInContainer}>
           <Pressable
             style={styles.button}
@@ -66,43 +54,30 @@ const SignIn = ({ navigation }: Props) => {
               });
             }}
           >
-            <FAIcon 
-                  name="windows" 
-                  color='#FFFFFF'
-                  size={25}
-            />
-            <Text style={styles.buttonText}>{'\t'}Sign in with Microsoft</Text>
+            <FAIcon name="windows" color="#FFFFFF" size={25} />
+            <Text style={styles.buttonText}>{"\t"}Sign in with Microsoft</Text>
           </Pressable>
         </View>
-
       </View>
-
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Already have an account? {'\n'}Sign In</Text>
+        <Text style={styles.footerText}>
+          Already have an account? {"\n"}Sign In
+        </Text>
       </View>
-
     </View>
-
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: "column",
-    maxHeight: windowHeight,
-    maxWidth: windowWidth,
-    backgroundColor: "#fff",
-    // paddingBottom: 100,
+    backgroundColor: "#FFFFFF",
   },
   headerContainer: {
-    // flex: 1,
     flexDirection: "row",
     paddingTop: 50,
     alignItems: "flex-end",
     paddingLeft: 25,
-    // justifyContent: "flex-end"
-    // paddingBottom: 50,
     backgroundColor: "#fff",
   },
   headerText: {
@@ -111,9 +86,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 25,
     paddingRight: 15,
-    // alignItem: "center",
     textAlign: "right",
-    // lineHeight: 30
     backgroundColor: "#fff",
   },
   title: {
@@ -132,14 +105,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   googleSignInContainer: {
-    // flex: 1,
     paddingTop: 20,
     paddingBottom: 20,
     backgroundColor: "#fff",
     alignItems: "center",
   },
   microsoftSignInContainer: {
-    // flex: 1,
     paddingTop: 20,
     paddingBottom: 20,
     backgroundColor: "#fff",
@@ -163,7 +134,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     marginTop: 10,
     marginBottom: 10,
-    flexDirection: "row"
+    flexDirection: "row",
   },
   buttonText: {
     color: "white",
@@ -171,28 +142,20 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   separator: {
-    height: 25
+    height: 25,
   },
   footer: {
     flex: 1,
-    backgroundColor: "#fff"
+    backgroundColor: "#fff",
   },
   footerText: {
     flex: 1,
     color: "black",
     fontWeight: "bold",
     fontSize: 25,
-    // paddingTop: 100,
-    // paddingBottom: 100,
-    // alignItem: "center",
-    // justifyContent: "center",
     textAlign: "center",
-    // lineHeight: 30
     backgroundColor: "#fff",
-  }
-  // boxShadow: {
-  //   paddingTop: 140,
-  // },
+  },
 });
 
 export default SignIn;

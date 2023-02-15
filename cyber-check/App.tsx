@@ -7,6 +7,7 @@ import ManageAccount from "./src/screens/ManageAccount";
 import SelectIncident from "./src/screens/SelectIncident";
 import Quiz from "./src/screens/Quiz";
 import ReportTasks from "./src/screens/ReportTasks";
+import TeamCollab from "./src/screens/TeamCollab";
 import ReportDescription from "./src/screens/ReportDescription";
 
 const Stack = createNativeStackNavigator();
@@ -62,6 +63,13 @@ const App = () => {
           <Stack.Screen
             name="ReportTasks"
             component={ReportTasks}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="TeamCollab"
+            component={TeamCollab}
             options={{
               headerShown: false,
             }}
