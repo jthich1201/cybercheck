@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Text, Pressable, Dimensions } from "react-native";
+import { StyleSheet, View, Text, Pressable, Dimensions, Linking } from "react-native";
 import { useFonts } from "expo-font";
 import { Input, CheckBox } from "@rneui/themed";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -21,6 +21,7 @@ const SignIn = ({ navigation }: Props) => {
   console.log(userEmail);
   return (
     <View style={styles.container}>
+      
       <View style={styles.headerContainer}>
         <Icon name="closed-caption" type="material" color="#007AFF" size={70} />
 
@@ -120,6 +121,7 @@ const styles = StyleSheet.create({
     padding: 10,
     width: "80%",
   },
+  
   button: {
     backgroundColor: "#007AFF",
     padding: 10,

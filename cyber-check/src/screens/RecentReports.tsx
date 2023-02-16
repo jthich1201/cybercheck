@@ -98,7 +98,7 @@ const RecentReportsScreen = ({ navigation }: Props) => (
         <View style={styles.headerContainer}>
           <View>
             <TouchableOpacity
-              onPress={() => navigation.navigate("ManageAccount")}
+              onPress={() => navigation.navigate("ManageAccount" as never)}
             >
               <Icon name="settings" type="material"></Icon>
             </TouchableOpacity>
@@ -108,7 +108,7 @@ const RecentReportsScreen = ({ navigation }: Props) => (
           </View>
           <View>
             <TouchableOpacity
-              onPress={() => navigation.navigate("SelectIncident")}
+              onPress={() => navigation.navigate("SelectIncident" as never)}
             >
               <Icon name="tab" type="material"></Icon>
             </TouchableOpacity>

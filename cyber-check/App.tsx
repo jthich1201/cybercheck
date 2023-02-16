@@ -11,12 +11,13 @@ import TeamCollab from "./src/screens/TeamCollab";
 import TaskComment from "./src/screens/TaskComment";
 import TaskDescription from "./src/screens/TaskDescription";
 
+import linking from "./src/constants/linking";
 const Stack = createNativeStackNavigator();
 
 const App = () => {
   return (
     <>
-      <NavigationContainer>
+      <NavigationContainer linking={linking}>
         <Stack.Navigator>
           <Stack.Screen
             name="SignIn"
