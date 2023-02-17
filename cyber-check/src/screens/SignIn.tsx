@@ -44,8 +44,7 @@ const SignIn = ({ navigation }: Props) => {
     if (response?.type === "success") {
       const { authentication } = response;
       if (authentication) {
-        setAuth(response.authentication);
-
+        setAuth(authentication);
         const persistAuth = async () => {
           await AsyncStorage.setItem(
             "auth",
@@ -53,6 +52,7 @@ const SignIn = ({ navigation }: Props) => {
           );
         };
         persistAuth();
+        getUserData(authentication.accessToken);
       }
     }
   }, [response]);
@@ -75,30 +75,17 @@ const SignIn = ({ navigation }: Props) => {
     getPersistedAuth();
   }, []);
 
-  const getUserData = async () => {
+  const getUserData = async (token: string) => {
     let userInfoResponse = await fetch(
       "https://www.googleapis.com/userinfo/v2/me",
       {
-        headers: { Authorization: `Bearer ${auth.accessToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       }
     );
 
     userInfoResponse.json().then((data) => {
-      console.log(data);
       setUserInfo(data);
     });
-  };
-
-  const showUserData = () => {
-    if (userInfo) {
-      return (
-        <View>
-          <Image source={{ uri: userInfo.picture }}></Image>
-          <Text>Welcome {userInfo.name}</Text>
-          <Text>{userInfo.email}</Text>
-        </View>
-      );
-    }
   };
 
   const getClientId = () => {
@@ -108,6 +95,8 @@ const SignIn = ({ navigation }: Props) => {
       return "743023624865-l54654s9nq7ln65fn3svku1u80195ln1.apps.googleusercontent.com";
     }
   };
+
+  //need to think abt how to handle refreshing token automatically and not rely on user to refresh
 
   const refreshToken = async () => {
     const clientId = getClientId();
@@ -158,10 +147,14 @@ const SignIn = ({ navigation }: Props) => {
           <Pressable
             style={styles.button}
             onPress={() => {
-              navigation.navigate("RecentReportsTab", {
-                screen: "Home",
-                params: { email: userEmail },
-              });
+              if (auth) {
+                navigation.navigate("RecentReportsTab", {
+                  screen: "Home",
+                  params: { user: userInfo },
+                });
+              } else {
+                promptAsync({ useProxy: true, showInRecents: true });
+              }
             }}
           >
             <FAIcon name="google" color="#FFFFFF" size={25} />
@@ -178,23 +171,9 @@ const SignIn = ({ navigation }: Props) => {
             // }
           >
             <FAIcon name="windows" color="#FFFFFF" size={25} />
-            <Text style={styles.buttonText}>
-              {"\t"}
-              {auth ? "Get User Data" : "Login"}
-            </Text>
+            <Text style={styles.buttonText}>{"\t"}Sign in with Microsoft</Text>
           </Pressable>
-          <View>
-            {showUserData()}
-            <Button
-              title={auth ? "Get User Data" : "Login"}
-              onPress={
-                auth
-                  ? getUserData
-                  : () => promptAsync({ useProxy: true, showInRecents: true })
-              }
-            />
-            {auth ? <Button title="Logout" onPress={logout} /> : undefined}
-          </View>
+          {auth ? <Button title="Logout" onPress={logout} /> : undefined}
           {requireRefresh ? (
             <View>
               <Text>Token requires refres</Text>

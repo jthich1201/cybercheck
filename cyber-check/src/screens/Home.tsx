@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, Image } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 type RootStackParamList = {};
@@ -7,10 +7,15 @@ type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 const Home = ({ route, navigation }: Props) => {
-  const { email } = route.params;
+  const { user } = route.params;
+  console.log(user);
   return (
     <View style={styles.container}>
-      <Text>Hello user {email}</Text>
+      <View>
+        <Image source={{ uri: user.picture }}></Image>
+        <Text>Welcome {user.name}</Text>
+        <Text>{user.email}</Text>
+      </View>
     </View>
   );
 };
