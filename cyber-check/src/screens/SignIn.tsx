@@ -1,9 +1,17 @@
-import React, { useState } from "react";
-import { StyleSheet, View, Text, Pressable, Dimensions, Linking } from "react-native";
+import React, { useState, useEffect, SetStateAction } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  Pressable,
+  Dimensions,
+  Button,
+  Linking,
+  Platform,
+} from "react-native";
 import { useFonts } from "expo-font";
-import { Input, CheckBox } from "@rneui/themed";
+// import SafariView from "react-native-safari-view";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { FlipInEasyX } from "react-native-reanimated";
 import { Icon } from "@rneui/base";
 import FAIcon from "react-native-vector-icons/FontAwesome";
 
@@ -17,11 +25,66 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 const SignIn = ({ navigation }: Props) => {
   const [userEmail, setUserEmail] = useState("");
   const [saveUser, setSaveUser] = useState(false);
+  const [uri, setURL] = useState("");
+
+  // Set up Linking
+  useEffect(() => {
+    Linking.addEventListener("url", (url) => handleOpenURL(url.url));
+    Linking.getInitialURL().then((url: any) => {
+      if (url) {
+        handleOpenURL({ url });
+      }
+    });
+    return () => {
+      Linking.removeAllListeners("url");
+    };
+  }, []);
+
+  const handleOpenURL = (url: any) => {
+    // Extract stringified user string out of the URL
+    const user = decodeURI(url).match(
+      /firstName=([^#]+)\/lastName=([^#]+)\/email=([^#]+)/
+    );
+    if (user == null) return;
+    // 2 - store data in Redux
+    const userData = {
+      isAuthenticated: true,
+      firstName: user[1],
+      lastName: user[2],
+      //some users on fb may not registered with email but rather with phone
+      email: user && user[3] ? user[3] : "NA",
+    };
+    //redux function
+    // login(userData);
+    if (Platform.OS === "ios") {
+      // SafariView.dismiss();
+    } else {
+      setURL("");
+    }
+    navigation.navigate("RecentReportsTab", {
+      screen: "Home",
+      params: { email: userEmail },
+    });
+  };
+
+  //method that opens a given url
+  //based on the platform will use either SafariView or Linking
+  //SafariView is a better practice in IOS
+  const openUrl = (url: any) => {
+    // // Use SafariView on iOS
+    if (Platform.OS === "ios") {
+      // SafariView.show({
+      //   url,
+      //   fromBottom: true,
+      // });
+    } else {
+      setURL(url);
+    }
+  };
 
   console.log(userEmail);
   return (
     <View style={styles.container}>
-      
       <View style={styles.headerContainer}>
         <Icon name="closed-caption" type="material" color="#007AFF" size={70} />
 
@@ -59,11 +122,6 @@ const SignIn = ({ navigation }: Props) => {
             <Text style={styles.buttonText}>{"\t"}Sign in with Microsoft</Text>
           </Pressable>
         </View>
-      </View>
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          Already have an account? {"\n"}Sign In
-        </Text>
       </View>
     </View>
   );
@@ -121,7 +179,7 @@ const styles = StyleSheet.create({
     padding: 10,
     width: "80%",
   },
-  
+
   button: {
     backgroundColor: "#007AFF",
     padding: 10,
