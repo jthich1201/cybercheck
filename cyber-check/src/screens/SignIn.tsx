@@ -8,12 +8,16 @@ import {
   Button,
   Linking,
   Platform,
+  Image,
+  StatusBar,
 } from "react-native";
 import { useFonts } from "expo-font";
-// import SafariView from "react-native-safari-view";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/base";
 import FAIcon from "react-native-vector-icons/FontAwesome";
+import * as Google from "expo-auth-session/providers/google";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as AuthSession from "expo-auth-session";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -23,66 +27,122 @@ type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 const SignIn = ({ navigation }: Props) => {
-  const [userEmail, setUserEmail] = useState("");
-  const [saveUser, setSaveUser] = useState(false);
-  const [uri, setURL] = useState("");
+  const [userInfo, setUserInfo] = useState<any>();
+  const [auth, setAuth] = useState<any>();
+  const [requireRefresh, setRequireRefresh] = useState(false);
 
-  // Set up Linking
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId:
+      "743023624865-l54654s9nq7ln65fn3svku1u80195ln1.apps.googleusercontent.com",
+    iosClientId:
+      "743023624865-5v5sui9ougffb0s4ue307l9be6svkm1d.apps.googleusercontent.com",
+    expoClientId:
+      "743023624865-g0q4g5kd53qk1m9b7p53264cfdqjkcti.apps.googleusercontent.com",
+  });
+
   useEffect(() => {
-    Linking.addEventListener("url", (url) => handleOpenURL(url.url));
-    Linking.getInitialURL().then((url: any) => {
-      if (url) {
-        handleOpenURL({ url });
+    if (response?.type === "success") {
+      const { authentication } = response;
+      if (authentication) {
+        setAuth(response.authentication);
+
+        const persistAuth = async () => {
+          await AsyncStorage.setItem(
+            "auth",
+            JSON.stringify(response.authentication)
+          );
+        };
+        persistAuth();
       }
-    });
-    return () => {
-      Linking.removeAllListeners("url");
+    }
+  }, [response]);
+
+  useEffect(() => {
+    const getPersistedAuth = async () => {
+      const authString = await AsyncStorage.getItem("auth");
+      if (authString != null) {
+        const authFromJson = JSON.parse(authString);
+        setAuth(authFromJson);
+        console.log(authFromJson);
+        setRequireRefresh(
+          AuthSession.TokenResponse.isTokenFresh({
+            expiresIn: authFromJson.expiresIn,
+            issuedAt: authFromJson.issuedAt,
+          })
+        );
+      }
     };
+    getPersistedAuth();
   }, []);
 
-  const handleOpenURL = (url: any) => {
-    // Extract stringified user string out of the URL
-    const user = decodeURI(url).match(
-      /firstName=([^#]+)\/lastName=([^#]+)\/email=([^#]+)/
+  const getUserData = async () => {
+    let userInfoResponse = await fetch(
+      "https://www.googleapis.com/userinfo/v2/me",
+      {
+        headers: { Authorization: `Bearer ${auth.accessToken}` },
+      }
     );
-    if (user == null) return;
-    // 2 - store data in Redux
-    const userData = {
-      isAuthenticated: true,
-      firstName: user[1],
-      lastName: user[2],
-      //some users on fb may not registered with email but rather with phone
-      email: user && user[3] ? user[3] : "NA",
-    };
-    //redux function
-    // login(userData);
-    if (Platform.OS === "ios") {
-      // SafariView.dismiss();
-    } else {
-      setURL("");
-    }
-    navigation.navigate("RecentReportsTab", {
-      screen: "Home",
-      params: { email: userEmail },
+
+    userInfoResponse.json().then((data) => {
+      console.log(data);
+      setUserInfo(data);
     });
   };
 
-  //method that opens a given url
-  //based on the platform will use either SafariView or Linking
-  //SafariView is a better practice in IOS
-  const openUrl = (url: any) => {
-    // // Use SafariView on iOS
-    if (Platform.OS === "ios") {
-      // SafariView.show({
-      //   url,
-      //   fromBottom: true,
-      // });
-    } else {
-      setURL(url);
+  const showUserData = () => {
+    if (userInfo) {
+      return (
+        <View>
+          <Image source={{ uri: userInfo.picture }}></Image>
+          <Text>Welcome {userInfo.name}</Text>
+          <Text>{userInfo.email}</Text>
+        </View>
+      );
     }
   };
 
-  console.log(userEmail);
+  const getClientId = () => {
+    if (Platform.OS === "ios") {
+      return "743023624865-5v5sui9ougffb0s4ue307l9be6svkm1d.apps.googleusercontent.com";
+    } else {
+      return "743023624865-l54654s9nq7ln65fn3svku1u80195ln1.apps.googleusercontent.com";
+    }
+  };
+
+  const refreshToken = async () => {
+    const clientId = getClientId();
+    const tokenResult = await AuthSession.refreshAsync(
+      {
+        clientId: clientId,
+        refreshToken: auth.refreshToken,
+      },
+      {
+        tokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
+      }
+    );
+
+    tokenResult.refreshToken = auth.refreshToken;
+
+    setAuth(tokenResult);
+    await AsyncStorage.setItem("auth", JSON.stringify(tokenResult));
+    setRequireRefresh(false);
+  };
+
+  const logout = async () => {
+    await AuthSession.revokeAsync(
+      {
+        token: auth.accessToken,
+      },
+      {
+        revocationEndpoint: "https://oauth2.googleapis.com/revoke",
+      }
+    );
+
+    setAuth(undefined);
+    setUserInfo(undefined);
+    await AsyncStorage.removeItem("auth");
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -111,16 +171,36 @@ const SignIn = ({ navigation }: Props) => {
         <View style={styles.microsoftSignInContainer}>
           <Pressable
             style={styles.button}
-            onPress={() => {
-              navigation.navigate("RecentReportsTab", {
-                screen: "Home",
-                params: { email: userEmail },
-              });
-            }}
+            // onPress={
+            //   auth
+            //     ? getUserData
+            //     : () => promptAsync({ useProxy: true, showInRecents: true })
+            // }
           >
             <FAIcon name="windows" color="#FFFFFF" size={25} />
-            <Text style={styles.buttonText}>{"\t"}Sign in with Microsoft</Text>
+            <Text style={styles.buttonText}>
+              {"\t"}
+              {auth ? "Get User Data" : "Login"}
+            </Text>
           </Pressable>
+          <View>
+            {showUserData()}
+            <Button
+              title={auth ? "Get User Data" : "Login"}
+              onPress={
+                auth
+                  ? getUserData
+                  : () => promptAsync({ useProxy: true, showInRecents: true })
+              }
+            />
+            {auth ? <Button title="Logout" onPress={logout} /> : undefined}
+          </View>
+          {requireRefresh ? (
+            <View>
+              <Text>Token requires refres</Text>
+              <Button title="Refresh Token" onPress={refreshToken}></Button>
+            </View>
+          ) : undefined}
         </View>
       </View>
     </View>
