@@ -40,6 +40,39 @@ const SignIn = ({ navigation }: Props) => {
       "743023624865-g0q4g5kd53qk1m9b7p53264cfdqjkcti.apps.googleusercontent.com",
   });
 
+  const azureTenantId = "ad0f0abb-f1c1-418d-86f5-540d614fa547";
+  const discovery = AuthSession.useAutoDiscovery(
+    `https://login.microsoftonline.com/${azureTenantId}/v2.0`
+  );
+  const getAzureConfig = () => {
+    if (Platform.OS === "ios") {
+      let config = {
+        clientId: "b1f7df32-6897-4434-8af4-2eb550090d2e",
+        redirectUri: "msauth.com.onlydevs.cybercheck://auth",
+      };
+      return config;
+    } else {
+      let config = {
+        clientId: "b1f7df32-6897-4434-8af4-2eb550090d2e",
+        redirectUri:
+          "msauth://com.onlydevs.cybercheck/ga0RGNYHvNM5d0SLGQfpQWAPGJ8%3D",
+      };
+      return config;
+    }
+  };
+
+  const config = getAzureConfig();
+
+  const [azureRequest, azureResponse, azurePromptAsync] =
+    AuthSession.useAuthRequest(
+      {
+        clientId: config!.clientId,
+        scopes: ["openid", "profile", "email", "offline_access"],
+        redirectUri: config!.redirectUri,
+      },
+      discovery
+    );
+
   useEffect(() => {
     if (response?.type === "success") {
       const { authentication } = response;
@@ -164,11 +197,9 @@ const SignIn = ({ navigation }: Props) => {
         <View style={styles.microsoftSignInContainer}>
           <Pressable
             style={styles.button}
-            // onPress={
-            //   auth
-            //     ? getUserData
-            //     : () => promptAsync({ useProxy: true, showInRecents: true })
-            // }
+            onPress={() => {
+              azurePromptAsync({ useProxy: true, showInRecents: true });
+            }}
           >
             <FAIcon name="windows" color="#FFFFFF" size={25} />
             <Text style={styles.buttonText}>{"\t"}Sign in with Microsoft</Text>
