@@ -12,7 +12,6 @@ const Home = ({ route, navigation }: Props) => {
   return (
     <View style={styles.container}>
       <View>
-        <Image source={{ uri: user.picture }}></Image>
         <Text>Welcome {user.name}</Text>
         <Text>{user.email}</Text>
       </View>
