@@ -12,9 +12,9 @@ app.use(express.json());
 // Initialize Passport
 app.use(passport.initialize());
 
-const ssoRoutes = require("./routes/ssoRoutes");
+//const ssoRoutes = require("./routes/ssoRoutes");
 
-app.use('/', ssoRoutes);
+//app.use('/', ssoRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.send({data: 'cyber CHECK'});
@@ -25,6 +25,7 @@ const commentsRoute = require("./routes/Comments");
 
 app.use('/Users', userRoute);
 app.use('/Comments', commentsRoute);
+app.use("/api/comments", commentsRoute);
 
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at https://localhost:${port}`);
