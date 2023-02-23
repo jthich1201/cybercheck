@@ -11,7 +11,6 @@
       <data android:scheme="https"/>
     </intent>
   </queries>
-  
   <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="true" android:theme="@style/AppTheme" android:usesCleartextTraffic="true">
     <meta-data android:name="expo.modules.updates.ENABLED" android:value="true"/>
     <meta-data android:name="expo.modules.updates.EXPO_SDK_VERSION" android:value="47.0.0"/>
@@ -27,39 +26,32 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:host="com.onlydevs.cybercheck" android:path="/ga0RGNYHvNM5d0SLGQfpQWAPGJ8=" android:scheme="msauth"/>
         <data android:scheme="com.onlydevs.cybercheck"/>
+        <data android:scheme="custom"/>
+        <data android:scheme="https"/>
+        <data android:scheme="myapp"/>
+      </intent-filter>
+    </activity>
+    <activity
+        android:name="com.microsoft.identity.client.BrowserTabActivity">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="msauth"
+            android:host="com.onlydevs.cybercheck"
+            android:path="/ga0RGNYHvNM5d0SLGQfpQWAPGJ8=" />
       </intent-filter>
     </activity>
     <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" android:exported="false"/>
-    <activity android:name="com.microsoft.identity.client.BrowserTabActivity">
-    <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-
-        <!-- Add the custom URI scheme here -->
-        <data android:scheme="msauth" android:host="com.onlydevs.cybercheck" />
-    </intent-filter>
-</activity>
-    <activity
-  android:launchMode="singleTask"
-  android:name="com.memcaps.MainActivity"
-  android:label="@string/app_name"
-  android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-  android:windowSoftInputMode="adjustResize"
-  android:exported="true">
-  <intent-filter>
-    <action cyber-check="android.intent.action.VIEW" />
-    <category cyber-check="android.intent.category.DEFAULT" />
-    <category cyber-check="android.intent.category.BROWSABLE" />
-    <data 
-      android:host="app"
-      android:scheme="memcaps" 
-    />
-  </intent-filter>
-</activity>
-
+    <activity android:launchMode="singleTask" android:name="com.memcaps.MainActivity" android:label="@string/app_name" android:configChanges="keyboard|keyboardHidden|orientation|screenSize" android:windowSoftInputMode="adjustResize" android:exported="true">
+      <intent-filter>
+        <action cyber-check="android.intent.action.VIEW"/>
+        <category cyber-check="android.intent.category.DEFAULT"/>
+        <category cyber-check="android.intent.category.BROWSABLE"/>
+        <data android:host="app" android:scheme="memcaps"/>
+      </intent-filter>
+    </activity>
   </application>
-  
 </manifest>
