@@ -1,0 +1,15 @@
+{
+"client_id" : "b1f7df32-6897-4434-8af4-2eb550090d2e",
+"authorization_user_agent" : "DEFAULT",
+"redirect_uri" : "msauth://com.onlydevs.cybercheck/ga0RGNYHvNM5d0SLGQfpQWAPGJ8%3D",
+  "account_mode" : "SINGLE",
+"authorities" : [
+{
+"type": "AAD",
+"audience": {
+"type": "AzureADandPersonalMicrosoftAccount",
+"tenant_id": "common"
+}
+}
+]
+}
