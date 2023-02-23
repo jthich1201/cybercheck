@@ -48,7 +48,7 @@ const SignIn = ({ navigation }: Props) => {
         redirectUri: "msauth.com.onlydevs.cybercheck://auth",
       };
       return config;
-    } else {
+    } else if (Platform.OS === "android") {
       let config = {
         clientId: "b1f7df32-6897-4434-8af4-2eb550090d2e",
         redirectUri:
@@ -57,35 +57,8 @@ const SignIn = ({ navigation }: Props) => {
       return config;
     }
   };
-
   const config = getAzureConfig();
   const [token, setToken] = React.useState<string | null>(null);
-  const callMsGraph = async (token: string) => {
-    /* make a GET request using fetch and querying with the token */
-    let graphResponse = null;
-    await fetch("https://graph.microsoft.com/v1.0/me", {
-      method: "GET",
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        graphResponse = response;
-        console.log("gresponse:", response);
-      })
-      .catch((error) => {
-        graphResponse = error;
-      });
-
-    const finalResponse = {
-      ...graphResponse,
-      type: "success",
-    };
-    console.log("final repsonse", finalResponse);
-    return finalResponse;
-  };
-
   const [azureRequest, azureResponse, azurePromptAsync] =
     AuthSession.useAuthRequest(
       {
@@ -112,14 +85,6 @@ const SignIn = ({ navigation }: Props) => {
       }
     }
   }, [response]);
-
-  useEffect(() => {
-    console.log(`azureResponse,`, azureResponse);
-  }, [azureResponse]);
-  useEffect(() => {
-    console.log(`azureRequest, `, azureRequest);
-    console.log(azureResponse);
-  }, [azureRequest]);
 
   useEffect(() => {
     const getPersistedAuth = async () => {
@@ -181,7 +146,7 @@ const SignIn = ({ navigation }: Props) => {
     setRequireRefresh(false);
   };
 
-  const logout = async () => {
+  const logoutGoogle = async () => {
     await AuthSession.revokeAsync(
       {
         token: auth.accessToken,
@@ -196,8 +161,86 @@ const SignIn = ({ navigation }: Props) => {
     await AsyncStorage.removeItem("auth");
   };
 
+  const callMsGraph = async (token: string) => {
+    let graphResponse = null;
+    await fetch("https://graph.microsoft.com/v1.0/me", {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        graphResponse = response;
+        console.log("gresponse:", response);
+      })
+      .catch((error) => {
+        graphResponse = error;
+      });
+
+    const finalResponse = {
+      ...graphResponse,
+      type: "success",
+    };
+    console.log("final repsonse", finalResponse);
+    return finalResponse;
+  };
+
+  const signInAzure = async () => {
+    // if (signedIn) {
+    //   if (userInfo) {
+    //     navigation.navigate("RecentReportsTab", {
+    //       screen: "Home",
+    //       params: { user: userInfo },
+    //     });
+    //   } else if (token) {
+    //     callMsGraph(token);
+    //   } else {
+    //     console.log("no user info or token");
+    //   }
+    // } else {
+    if (!config) return;
+    let clientId = config.clientId;
+    let redirectUri = config.redirectUri;
+    azurePromptAsync().then((codeResponse) => {
+      console.log(codeResponse);
+      if (azureRequest && codeResponse?.type === "success" && discovery) {
+        //Exchange the code to get the JWT
+        AuthSession.exchangeCodeAsync(
+          {
+            clientId,
+            code: codeResponse.params.code,
+            //Reuse the codeVerifier for PCKE
+            extraParams: azureRequest.codeVerifier
+              ? { code_verifier: azureRequest.codeVerifier }
+              : undefined,
+            redirectUri,
+          },
+          discovery
+        ).then(async (res) => {
+          setToken(res.accessToken);
+          await callMsGraph(res.accessToken).then((res) => {
+            if (res.type === "success") {
+              var userData = {
+                id: res.id,
+                name: res.displayName,
+                email: res.mail,
+              };
+              setUserInfo(userData);
+              navigation.navigate("RecentReportsTab", {
+                screen: "Home",
+                params: { user: userData },
+              });
+              setSignedIn(true);
+            }
+          });
+        });
+      }
+    });
+    // }
+  };
+
   const logoutAzure = async () => {
-    //write a basic post request to logout of azure
     const logoutResponse = await fetch(
       "https://login.microsoftonline.com/common/oauth2/v2.0/logout",
       {
@@ -245,59 +288,18 @@ const SignIn = ({ navigation }: Props) => {
           <Pressable
             style={styles.button}
             onPress={() => {
-              // azurePromptAsync();
-              let clientId = config.clientId;
-              let redirectUri = config.redirectUri;
-              azurePromptAsync().then((codeResponse) => {
-                /* @end */
-                if (
-                  azureRequest &&
-                  codeResponse?.type === "success" &&
-                  discovery
-                ) {
-                  /* @info Exchange the code to get the JWT. */
-                  AuthSession.exchangeCodeAsync(
-                    /* @end */
-                    {
-                      clientId,
-                      code: codeResponse.params.code,
-                      /* @info Reuse the codeVerifier for PCKE */
-                      extraParams: azureRequest.codeVerifier
-                        ? { code_verifier: azureRequest.codeVerifier }
-                        : undefined,
-                      /* @end */
-                      redirectUri,
-                    },
-                    discovery
-                  ).then(async (res) => {
-                    setToken(res.accessToken);
-                    await callMsGraph(res.accessToken).then((res) => {
-                      let userData = {
-                        id: res.id,
-                        name: res.displayName,
-                        email: res.mail,
-                      };
-                      console.log(userData);
-                      if (res.type === "success") {
-                        navigation.navigate("RecentReportsTab", {
-                          screen: "Home",
-                          params: { user: userData },
-                        });
-                        setSignedIn(true);
-                      }
-                    });
-                  });
-                }
-              });
+              signInAzure();
             }}
           >
             <FAIcon name="windows" color="#FFFFFF" size={25} />
             <Text style={styles.buttonText}>{"\t"}Sign in with Microsoft</Text>
           </Pressable>
           {signedIn ? (
-            <Button title="Logout" onPress={logoutAzure} />
+            <Button title="Logout Azure" onPress={logoutAzure} />
           ) : undefined}
-          {auth ? <Button title="Logout" onPress={logout} /> : undefined}
+          {auth ? (
+            <Button title="Logout Google" onPress={logoutGoogle} />
+          ) : undefined}
           {requireRefresh ? (
             <View>
               <Text>Token requires refres</Text>
