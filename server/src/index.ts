@@ -18,9 +18,12 @@ app.get('/', (req: Request, res: Response) => {
 
 const userRoute = require("./routes/User");
 const commentsRoute = require("./routes/Comments");
+const reportRoute = require("./routse/reportRoutes")
 
 app.use('/Users', userRoute);
 app.use("/api/comments", commentsRoute);
+app.use('/Reports', reportRoute);
+
 
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at https://localhost:${port}`);
