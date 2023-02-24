@@ -5,8 +5,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app: Express = express();
-//const port = process.env.PORT;
-const port = 3000;
+const port = process.env.PORT;
+
 app.use(express.json());
 
 // Initialize Passport

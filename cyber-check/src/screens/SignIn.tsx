@@ -14,6 +14,7 @@ import FAIcon from "react-native-vector-icons/FontAwesome";
 import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as AuthSession from "expo-auth-session";
+import axios from "axios";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -126,7 +127,16 @@ const SignIn = ({ navigation }: Props) => {
   };
 
   //need to think abt how to handle refreshing token automatically and not rely on user to refresh
-
+const SaveUserData = async () => {
+  axios.post("http//localhost:3001/Users/saveUsers", { name: userInfo.name, email: userInfo.email})
+  .then((res) => {
+    console.log(res);
+  })
+  .catch((err) => {
+    console.log(err);
+  })
+  
+}
   const refreshToken = async () => {
     const clientId = getClientId();
     const tokenResult = await AuthSession.refreshAsync(
