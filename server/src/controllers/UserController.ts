@@ -8,8 +8,8 @@ const GetAllUsers = (req: any, res : any) => {
     return res.json(userList);
 }
 export const SaveUsers = async (req: any, res : any) => {
-    const {name, email} = req.body;
-    const result = await userService.SaveUserData(name, email);
+    const {name, email, role} = req.body;
+    const result = await userService.SaveUserData(name, email, role);
     res.send(201).json(result);
 }
 

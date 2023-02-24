@@ -15,6 +15,7 @@ import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as AuthSession from "expo-auth-session";
 import axios from "axios";
+import * as Linking from 'expo-linking';
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -28,7 +29,13 @@ const SignIn = ({ navigation }: Props) => {
   const [auth, setAuth] = useState<any>();
   const [requireRefresh, setRequireRefresh] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
-
+  const [admin, setAdmin] = useState(false);
+  Linking.addEventListener('url', ({ url }) => {
+    if (url.startsWith('com.onlydevs.cybercheck://Create-Admin-User')) {
+      setAdmin(true);
+      SaveUserData();
+    }
+  });
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId:
       "743023624865-l54654s9nq7ln65fn3svku1u80195ln1.apps.googleusercontent.com",
@@ -128,7 +135,7 @@ const SignIn = ({ navigation }: Props) => {
 
   //need to think abt how to handle refreshing token automatically and not rely on user to refresh
 const SaveUserData = async () => {
-  axios.post("http//localhost:3001/Users/saveUsers", { name: userInfo.name, email: userInfo.email})
+  axios.post("http//localhost:3001/Users/saveUsers", { name: userInfo.name, email: userInfo.email, role: admin ? "admin" : "user"})
   .then((res) => {
     console.log(res);
   })
