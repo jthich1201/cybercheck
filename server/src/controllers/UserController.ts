@@ -1,5 +1,5 @@
 
-import { userService } from "../services/Index";
+import { userService } from "../services/index";
 const { ReturnUserList } = require("../services/UserTable");
 
 
