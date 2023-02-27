@@ -142,6 +142,7 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     defaultConfig {
+        manifestPlaceholders = ['appAuthRedirectScheme': 'com.onlydevs.cybercheck']
         applicationId 'com.onlydevs.cybercheck'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
