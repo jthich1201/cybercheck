@@ -32,15 +32,14 @@ const TaskComment = ({ navigation, route }: Props) => {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/comments", {
+      const response = await fetch("http://192.168.1.3:3000/api/comments", {
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          taskId: task.id, // assuming your task object has an id property
-          comment: comment,
+        comment: comment 
         }),
       });
       const result = await response.json();
@@ -51,8 +50,6 @@ const TaskComment = ({ navigation, route }: Props) => {
       console.log(error);
     }
   };
-
-
   return (
     <SafeAreaView
       style={[

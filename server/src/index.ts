@@ -24,12 +24,11 @@ const userRoute = require("./routes/User");
 const commentsRoute = require("./routes/Comments");
 
 app.use('/Users', userRoute);
-app.use('/Comments', commentsRoute);
 app.use("/api/comments", commentsRoute);
 
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at https://localhost:${port}`);
 });
-app.get("/testingJWT", (req, res) => {
-  res.status(200).send(`email entered: ${req.userEmail}`);
-});
+// app.get("/testingJWT", (req, res) => {
+//   res.status(200).send(`email entered: ${req.userEmail}`);
+// });
