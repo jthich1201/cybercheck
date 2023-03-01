@@ -6,14 +6,14 @@ import {
   Pressable,
   Dimensions,
   Button,
-  Linking,
   Platform,
 } from "react-native";
-import { useFonts } from "expo-font";
-// import SafariView from "react-native-safari-view";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/base";
 import FAIcon from "react-native-vector-icons/FontAwesome";
+import * as Google from "expo-auth-session/providers/google";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as AuthSession from "expo-auth-session";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -23,66 +23,238 @@ type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 const SignIn = ({ navigation }: Props) => {
-  const [userEmail, setUserEmail] = useState("");
-  const [saveUser, setSaveUser] = useState(false);
-  const [uri, setURL] = useState("");
+  const [userInfo, setUserInfo] = useState<any>();
+  const [auth, setAuth] = useState<any>();
+  const [requireRefresh, setRequireRefresh] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
 
-  // Set up Linking
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    androidClientId:
+      "743023624865-l54654s9nq7ln65fn3svku1u80195ln1.apps.googleusercontent.com",
+    iosClientId:
+      "743023624865-5v5sui9ougffb0s4ue307l9be6svkm1d.apps.googleusercontent.com",
+    expoClientId:
+      "743023624865-g0q4g5kd53qk1m9b7p53264cfdqjkcti.apps.googleusercontent.com",
+  });
+
+  const azureTenantId = "ad0f0abb-f1c1-418d-86f5-540d614fa547";
+  const discovery = AuthSession.useAutoDiscovery(
+    `https://login.microsoftonline.com/${azureTenantId}/v2.0`
+  );
+  const getAzureConfig = () => {
+    if (Platform.OS === "ios") {
+      let config = {
+        clientId: "b1f7df32-6897-4434-8af4-2eb550090d2e",
+        redirectUri: "msauth.com.onlydevs.cybercheck://auth",
+      };
+      return config;
+    } else if (Platform.OS === "android") {
+      let config = {
+        clientId: "b1f7df32-6897-4434-8af4-2eb550090d2e",
+        redirectUri:
+          "msauth://com.onlydevs.cybercheck/ga0RGNYHvNM5d0SLGQfpQWAPGJ8%3D",
+      };
+      return config;
+    }
+  };
+  const config = getAzureConfig();
+  const [token, setToken] = React.useState<string | null>(null);
+  const [azureRequest, azureResponse, azurePromptAsync] =
+    AuthSession.useAuthRequest(
+      {
+        clientId: config!.clientId,
+        scopes: ["openid", "profile", "email", "offline_access", "User.Read"],
+        redirectUri: config!.redirectUri,
+      },
+      discovery
+    );
+
   useEffect(() => {
-    Linking.addEventListener("url", (url) => handleOpenURL(url.url));
-    Linking.getInitialURL().then((url: any) => {
-      if (url) {
-        handleOpenURL({ url });
+    if (response?.type === "success") {
+      const { authentication } = response;
+      if (authentication) {
+        setAuth(authentication);
+        const persistAuth = async () => {
+          await AsyncStorage.setItem(
+            "auth",
+            JSON.stringify(response.authentication)
+          );
+        };
+        persistAuth();
+        getUserData(authentication.accessToken);
       }
-    });
-    return () => {
-      Linking.removeAllListeners("url");
+    }
+  }, [response]);
+
+  useEffect(() => {
+    const getPersistedAuth = async () => {
+      const authString = await AsyncStorage.getItem("auth");
+      if (authString != null) {
+        const authFromJson = JSON.parse(authString);
+        setAuth(authFromJson);
+        console.log(authFromJson);
+        setRequireRefresh(
+          AuthSession.TokenResponse.isTokenFresh({
+            expiresIn: authFromJson.expiresIn,
+            issuedAt: authFromJson.issuedAt,
+          })
+        );
+      }
     };
+    getPersistedAuth();
   }, []);
 
-  const handleOpenURL = (url: any) => {
-    // Extract stringified user string out of the URL
-    const user = decodeURI(url).match(
-      /firstName=([^#]+)\/lastName=([^#]+)\/email=([^#]+)/
+  const getUserData = async (token: string) => {
+    let userInfoResponse = await fetch(
+      "https://www.googleapis.com/userinfo/v2/me",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
     );
-    if (user == null) return;
-    // 2 - store data in Redux
-    const userData = {
-      isAuthenticated: true,
-      firstName: user[1],
-      lastName: user[2],
-      //some users on fb may not registered with email but rather with phone
-      email: user && user[3] ? user[3] : "NA",
-    };
-    //redux function
-    // login(userData);
-    if (Platform.OS === "ios") {
-      // SafariView.dismiss();
-    } else {
-      setURL("");
-    }
-    navigation.navigate("RecentReportsTab", {
-      screen: "Home",
-      params: { email: userEmail },
+
+    userInfoResponse.json().then((data) => {
+      setUserInfo(data);
     });
   };
 
-  //method that opens a given url
-  //based on the platform will use either SafariView or Linking
-  //SafariView is a better practice in IOS
-  const openUrl = (url: any) => {
-    // // Use SafariView on iOS
+  const getClientId = () => {
     if (Platform.OS === "ios") {
-      // SafariView.show({
-      //   url,
-      //   fromBottom: true,
-      // });
+      return "743023624865-5v5sui9ougffb0s4ue307l9be6svkm1d.apps.googleusercontent.com";
     } else {
-      setURL(url);
+      return "743023624865-l54654s9nq7ln65fn3svku1u80195ln1.apps.googleusercontent.com";
     }
   };
 
-  console.log(userEmail);
+  //need to think abt how to handle refreshing token automatically and not rely on user to refresh
+
+  const refreshToken = async () => {
+    const clientId = getClientId();
+    const tokenResult = await AuthSession.refreshAsync(
+      {
+        clientId: clientId,
+        refreshToken: auth.refreshToken,
+      },
+      {
+        tokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
+      }
+    );
+
+    tokenResult.refreshToken = auth.refreshToken;
+
+    setAuth(tokenResult);
+    await AsyncStorage.setItem("auth", JSON.stringify(tokenResult));
+    setRequireRefresh(false);
+  };
+
+  const logoutGoogle = async () => {
+    await AuthSession.revokeAsync(
+      {
+        token: auth.accessToken,
+      },
+      {
+        revocationEndpoint: "https://oauth2.googleapis.com/revoke",
+      }
+    );
+
+    setAuth(undefined);
+    setUserInfo(undefined);
+    await AsyncStorage.removeItem("auth");
+  };
+
+  const callMsGraph = async (token: string) => {
+    let graphResponse = null;
+    await fetch("https://graph.microsoft.com/v1.0/me", {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        graphResponse = response;
+        console.log("gresponse:", response);
+      })
+      .catch((error) => {
+        graphResponse = error;
+      });
+
+    const finalResponse = {
+      ...graphResponse,
+      type: "success",
+    };
+    console.log("final repsonse", finalResponse);
+    return finalResponse;
+  };
+
+  const signInAzure = async () => {
+    // if (signedIn) {
+    //   if (userInfo) {
+    //     navigation.navigate("RecentReportsTab", {
+    //       screen: "Home",
+    //       params: { user: userInfo },
+    //     });
+    //   } else if (token) {
+    //     callMsGraph(token);
+    //   } else {
+    //     console.log("no user info or token");
+    //   }
+    // } else {
+    if (!config) return;
+    let clientId = config.clientId;
+    let redirectUri = config.redirectUri;
+    azurePromptAsync().then((codeResponse) => {
+      console.log(codeResponse);
+      if (azureRequest && codeResponse?.type === "success" && discovery) {
+        //Exchange the code to get the JWT
+        AuthSession.exchangeCodeAsync(
+          {
+            clientId,
+            code: codeResponse.params.code,
+            //Reuse the codeVerifier for PCKE
+            extraParams: azureRequest.codeVerifier
+              ? { code_verifier: azureRequest.codeVerifier }
+              : undefined,
+            redirectUri,
+          },
+          discovery
+        ).then(async (res) => {
+          setToken(res.accessToken);
+          await callMsGraph(res.accessToken).then((res) => {
+            if (res.type === "success") {
+              var userData = {
+                id: res.id,
+                name: res.displayName,
+                email: res.mail,
+              };
+              setUserInfo(userData);
+              navigation.navigate("RecentReportsTab", {
+                screen: "Home",
+                params: { user: userData },
+              });
+              setSignedIn(true);
+            }
+          });
+        });
+      }
+    });
+    // }
+  };
+
+  const logoutAzure = async () => {
+    const logoutResponse = await fetch(
+      "https://login.microsoftonline.com/common/oauth2/v2.0/logout",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `client_id=${config!.clientId}&token=${token}`,
+      }
+    );
+    console.log(logoutResponse);
+    setSignedIn(false);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -98,10 +270,14 @@ const SignIn = ({ navigation }: Props) => {
           <Pressable
             style={styles.button}
             onPress={() => {
-              navigation.navigate("RecentReportsTab", {
-                screen: "Home",
-                params: { email: userEmail },
-              });
+              if (auth) {
+                navigation.navigate("RecentReportsTab", {
+                  screen: "Home",
+                  params: { user: userInfo },
+                });
+              } else {
+                promptAsync({ useProxy: true, showInRecents: true });
+              }
             }}
           >
             <FAIcon name="google" color="#FFFFFF" size={25} />
@@ -112,15 +288,24 @@ const SignIn = ({ navigation }: Props) => {
           <Pressable
             style={styles.button}
             onPress={() => {
-              navigation.navigate("RecentReportsTab", {
-                screen: "Home",
-                params: { email: userEmail },
-              });
+              signInAzure();
             }}
           >
             <FAIcon name="windows" color="#FFFFFF" size={25} />
             <Text style={styles.buttonText}>{"\t"}Sign in with Microsoft</Text>
           </Pressable>
+          {signedIn ? (
+            <Button title="Logout Azure" onPress={logoutAzure} />
+          ) : undefined}
+          {auth ? (
+            <Button title="Logout Google" onPress={logoutGoogle} />
+          ) : undefined}
+          {requireRefresh ? (
+            <View>
+              <Text>Token requires refres</Text>
+              <Button title="Refresh Token" onPress={refreshToken}></Button>
+            </View>
+          ) : undefined}
         </View>
       </View>
     </View>
