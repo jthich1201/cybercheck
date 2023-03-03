@@ -25,6 +25,31 @@ const TaskComment = ({ navigation, route }: Props) => {
   const [inputText, setInputText] = useState("");
   const [commentText, setCommentText] = useState("");
 
+  const submitComment = async () => {
+    const comment = commentText.trim();
+    if (!comment) {
+      return;
+    }
+
+    try {
+      const response = await fetch("http://192.168.1.3:3000/api/comments", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+        comment: comment 
+        }),
+      });
+      const result = await response.json();
+      // handle response
+      console.log(result);
+    } catch (error) {
+      // handle error
+      console.log(error);
+    }
+  };
   return (
     <SafeAreaView
       style={[
@@ -41,9 +66,9 @@ const TaskComment = ({ navigation, route }: Props) => {
           <Icon name="arrow-back-ios" type="material"></Icon>
         </Pressable>
         <Text style={styles.header}>{reportName}</Text>
-        <Pressable onPress={() => navigation.navigate("RecentReportsTab")}>
-          <Icon name="ios-share" type="material"></Icon>
-        </Pressable>
+        <Pressable style={styles.button} onPress={submitComment}>
+            <Text style={styles.buttonText}>Add Comments</Text>
+          </Pressable>
       </View>
 
       <View style={styles.contentContainer}>

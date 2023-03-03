@@ -135,7 +135,7 @@ const SignIn = ({ navigation }: Props) => {
 
   //need to think abt how to handle refreshing token automatically and not rely on user to refresh
 const SaveUserData = async () => {
-  axios.post("http//localhost:3001/Users/saveUsers", { name: userInfo.name, email: userInfo.email, role: admin ? "admin" : "user"})
+  axios.post("http//localhost:3001/Users/saveUsers", { name: userInfo.name, email: userInfo.email, role: admin ? "admin" : "user})
   .then((res) => {
     console.log(res);
   })

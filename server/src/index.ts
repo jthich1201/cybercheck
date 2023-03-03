@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(passport.initialize());
 
 app.get('/', (req: Request, res: Response) => {
-  res.send({data: 'cyber CHECK'});
+  res.send({ data: 'cyber CHECK' });
 });
 
 const userRoute = require("./routes/User");
@@ -21,7 +21,7 @@ const commentsRoute = require("./routes/Comments");
 const reportRoute = require("./routse/reportRoutes")
 
 app.use('/Users', userRoute);
-app.use('/Comments', commentsRoute);
+app.use("/api/comments", commentsRoute);
 app.use('/Reports', reportRoute);
 
 
