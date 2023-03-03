@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(passport.initialize());
 
 app.get('/', (req: Request, res: Response) => {
-  res.send({data: 'cyber CHECK'});
+  res.send({ data: 'cyber CHECK' });
 });
 
 const userRoute = require("./routes/User");
