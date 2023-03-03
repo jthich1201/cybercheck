@@ -1,0 +1,40 @@
+{
+    "identify" : {
+        "1" : "Who has access to the network?",
+        "2" : "Are all network devices accounted for?",
+        "3" : "Are any devices using default credentials?",
+        "4" : "Is software and firmware up to date across devices?"
+    },
+
+    "incidentReponse" : 
+        [   
+            {
+                "incidentType" : "phishing",
+                    "prompts" : {
+                        "1" : "Change any affected passwords - If possible, immediately change the password for any affected accounts.  If this password was also used for other online accounts, change the passwords for those accounts to something unique and strong.",
+                        "2" : "Contact the fraud department of the breached account - If the phishing attack compromised your company's account at a financial institution, contact the bank immediately to report the incident.  Monitor for unauthorized transactions to the account.  If a personal account was involved, contact the 3 major credit bureaus to enable fraud alerts.",
+                        "3" : "Notify appropriate people in your company - follow your company's incident response plan to ensure the appropriate personnel are aware of the incident.",
+                        "4" : "Notify affected parties - if personal data of others (e.g., customers, suppliers) was compromised, be sure to notify them.  The compromised personal data could be used for identity theft.  Check the website of your state's attorney general for information on data breach notification requirements.",
+                        "5" : "Deploy and maintain anti-virus software - if the phishing attack aims to install malware on your computer, up-to-date anti-virus software may help prevent the malware from installing.",
+                        "6" : "Utilize email filters - many email services have configurable filters which can help prevent many phishing messages from ever reaching users' mailboxes.",
+                        "7" : "Configure email security technologies - email services can also implement email authentication technologies that verify where messages originated and can reject messages that are spoofed.  Check with your provider to see what security options are available.",
+                        "8" : "Enable anti-phishing capabilities - email clients and web browsers often have anti-phishing capabilities. Enable available capabilities to help protect against phishing attacks.",
+                        "9" : "Implement multi-factor authentication (MFA) - MFA requires an additional forms of authentication (e.g., a code texted to your phone number) in addition to your password.  If MFA is enabled for your accounts, an attacker may still not be able to access your account even if you are tricked into providing your password."
+                    }
+            },
+
+            {
+                "incidentType" : "phishing",
+                    "prompts" : {
+
+                    }
+            },
+
+            {
+                "incidentType" : "ransomeware",
+                    "prompts" : {
+
+                    }
+            }
+        ]
+}
