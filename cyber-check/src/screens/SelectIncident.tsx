@@ -15,6 +15,7 @@ import { IncidentOptions } from "../constants/IncidentOptions";
 import { Dropdown } from "react-native-element-dropdown";
 import { Icon } from "@rneui/base";
 import { scale } from "react-native-size-matters";
+import axios from "axios";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -34,6 +35,18 @@ const SelectIncident = ({ navigation }: Props) => {
   };
 
   console.log(getSelectedIncident(selectedIncident));
+
+  const createReport = async () => {
+    axios.post("http//localhost:3001/Reports/createReport", { selectedIncident: getSelectedIncident( selectedIncident), name: reportName})
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((err) => {
+      console.log(err);
+    })
+    
+  }
+
 
   return (
     <SafeAreaView
