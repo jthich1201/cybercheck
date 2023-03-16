@@ -16,9 +16,9 @@ app.get('/', (req: Request, res: Response) => {
   res.send({ data: 'cyber CHECK' });
 });
 
-const userRoute = require("./routes/User");
+const userRoute = require("./routes/userRoutes");
 const commentsRoute = require("./routes/Comments");
-const reportRoute = require("./routse/reportRoutes")
+const reportRoute = require("./routes/reportRoutes")
 
 app.use('/Users', userRoute);
 app.use("/api/comments", commentsRoute);
