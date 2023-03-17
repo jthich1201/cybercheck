@@ -19,6 +19,7 @@ import { Task } from "../types/Tasks";
 import {v4 as uuidv4} from 'uuid';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import SaveAndSharePDF from "../utils/pdfExport";
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
@@ -114,13 +115,7 @@ const ReportTasks = ({ route, navigation }: Props) => {
             <Icon name="arrow-back-ios" type="material"></Icon>
           </Pressable>
           <Text style={styles.header}>{reportName}</Text>
-          <Pressable
-            onPress={() =>
-              navigation.navigate("TaskDescription", { reportName })
-            }
-          >
-            <Icon name="arrow-forward-ios" type="material"></Icon>
-          </Pressable>
+          <SaveAndSharePDF />
         </View>
         <View style={styles.tasksContainer}>
           {TaskList.map((task) => {

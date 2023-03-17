@@ -10,6 +10,7 @@ type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 const Home = ({ route, navigation }: Props) => {
+
   let currentUser = getUser();
   return (
     <View style={styles.container}>
