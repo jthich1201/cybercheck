@@ -15,7 +15,7 @@ import * as Google from "expo-auth-session/providers/google";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as AuthSession from "expo-auth-session";
 import axios from "axios";
-import * as Linking from "expo-linking";
+import * as Linking from 'expo-linking';
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -30,8 +30,8 @@ const SignIn = ({ navigation }: Props) => {
   const [requireRefresh, setRequireRefresh] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [admin, setAdmin] = useState(false);
-  Linking.addEventListener("url", ({ url }) => {
-    if (url.startsWith("com.onlydevs.cybercheck://Create-Admin-User")) {
+  Linking.addEventListener('url', ({ url }) => {
+    if (url.startsWith('com.onlydevs.cybercheck://Create-Admin-User')) {
       setAdmin(true);
       SaveUserData();
     }
@@ -134,20 +134,16 @@ const SignIn = ({ navigation }: Props) => {
   };
 
   //need to think abt how to handle refreshing token automatically and not rely on user to refresh
-  const SaveUserData = async () => {
-    axios
-      .post("http//localhost:3001/Users/saveUsers", {
-        name: userInfo.name,
-        email: userInfo.email,
-        role: admin ? "admin" : "user",
-      })
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
+const SaveUserData = async () => {
+  axios.post("http//localhost:3001/Users/saveUsers", { name: userInfo.name, email: userInfo.email, role: admin ? "admin" : "user"})
+  .then((res) => {
+    console.log(res);
+  })
+  .catch((err) => {
+    console.log(err);
+  })
+  
+}
   const refreshToken = async () => {
     const clientId = getClientId();
     const tokenResult = await AuthSession.refreshAsync(

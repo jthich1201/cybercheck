@@ -7,13 +7,13 @@ type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 const Home = ({ route, navigation }: Props) => {
-  const { user } = route.params;
-  console.log(user);
+  //const { user } = route.params;
+//  console.log(user);
   return (
     <View style={styles.container}>
       <View>
-        <Text>Welcome {user.name}</Text>
-        <Text>{user.email}</Text>
+      {/* <Text>Welcome {user.name}</Text>
+      <Text>{user.email}</Text> */}
       </View>
     </View>
   );
