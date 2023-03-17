@@ -38,7 +38,7 @@ const SelectIncident = ({ navigation }: Props) => {
   useEffect(() => {
     const setName = async (value: string) => {
       try {
-        await AsyncStorage.setItem("key", value);
+        await AsyncStorage.setItem("selectedIncident", value);
       } catch (e) {
         console.log(e);
       }
