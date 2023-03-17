@@ -1,20 +1,24 @@
-import React from "react";
-import { StyleSheet, View, Text, Image } from "react-native";
+import React, { useEffect } from "react";
+import { StyleSheet, View, Text } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { User } from "../types/User";
+import { getUser } from "../hooks/getUser";
 
 type RootStackParamList = {};
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 const Home = ({ route, navigation }: Props) => {
-  const { user } = route.params;
-  console.log(user);
+  let currentUser = getUser();
   return (
     <View style={styles.container}>
-      <View>
-        <Text>Welcome {user.name}</Text>
-        <Text>{user.email}</Text>
-      </View>
+      {currentUser && (
+        <View>
+          <Text>Welcome {currentUser.name}</Text>
+          <Text>{currentUser.email}</Text>
+        </View>
+      )}
     </View>
   );
 };
