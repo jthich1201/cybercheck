@@ -33,7 +33,7 @@ const SignIn = ({ navigation }: Props) => {
   Linking.addEventListener('url', ({ url }) => {
     if (url.startsWith('com.onlydevs.cybercheck://Create-Admin-User')) {
       setAdmin(true);
-      SaveUserData();
+      // SaveUserData();
     }
   });
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -100,7 +100,6 @@ const SignIn = ({ navigation }: Props) => {
       if (authString != null) {
         const authFromJson = JSON.parse(authString);
         setAuth(authFromJson);
-        console.log(authFromJson);
         setRequireRefresh(
           AuthSession.TokenResponse.isTokenFresh({
             expiresIn: authFromJson.expiresIn,
@@ -134,16 +133,25 @@ const SignIn = ({ navigation }: Props) => {
   };
 
   //need to think abt how to handle refreshing token automatically and not rely on user to refresh
-const SaveUserData = async () => {
-  axios.post("http//localhost:3001/Users/saveUsers", { name: userInfo.name, email: userInfo.email, role: admin ? "admin" : "user"})
-  .then((res) => {
-    console.log(res);
-  })
-  .catch((err) => {
-    console.log(err);
-  })
-  
-}
+
+  const SaveUserData = async (data: any) => {
+    //   name: userInfo.name,
+    //   email: userInfo.email,
+    //   role: admin ? "admin" : "user",
+    //   platform: platform,
+    //   platformId: userInfo.id,
+    // }
+    axios
+      .post("http://10.0.0.129:3001/Users/saveUsers", data)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    await AsyncStorage.setItem("user", JSON.stringify(data));
+  };
+
   const refreshToken = async () => {
     const clientId = getClientId();
     const tokenResult = await AuthSession.refreshAsync(
@@ -236,21 +244,27 @@ const SaveUserData = async () => {
           discovery
         ).then(async (res) => {
           setToken(res.accessToken);
-          await callMsGraph(res.accessToken).then((res) => {
-            if (res.type === "success") {
-              var userData = {
-                id: res.id,
-                name: res.displayName,
-                email: res.mail,
-              };
-              setUserInfo(userData);
+          await callMsGraph(res.accessToken)
+            .then((res) => {
+              if (res.type === "success") {
+                console.log(res);
+                var userData = {
+                  name: res.displayName,
+                  email: res.mail,
+                  role: admin ? "admin" : "user",
+                  platform: "Azure",
+                  platformId: res.id,
+                };
+                setUserInfo(userData);
+                SaveUserData(userData);
+              }
+            })
+            .then(() => {
               navigation.navigate("RecentReportsTab", {
                 screen: "Home",
-                params: { user: userData },
               });
               setSignedIn(true);
-            }
-          });
+            });
         });
       }
     });
@@ -288,9 +302,16 @@ const SaveUserData = async () => {
             style={styles.button}
             onPress={() => {
               if (auth) {
+                const userData = {
+                  name: userInfo.name,
+                  email: userInfo.email,
+                  role: admin ? "admin" : "user",
+                  platform: "Google",
+                  platformId: userInfo.id,
+                };
+                SaveUserData(userData);
                 navigation.navigate("RecentReportsTab", {
                   screen: "Home",
-                  params: { user: userInfo },
                 });
               } else {
                 promptAsync({ useProxy: true, showInRecents: true });

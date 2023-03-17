@@ -45,7 +45,6 @@ const ReportTasks = ({ route, navigation }: Props) => {
         const value = await AsyncStorage.getItem("selectedIncident");
         console.log("executing getSelectedIncident");
         if (value !== null) {
-          console.log(JSON.parse(value));
           setSelectedIncident(value);
         }
       } catch (e) {
