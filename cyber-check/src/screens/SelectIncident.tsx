@@ -39,6 +39,7 @@ const SelectIncident = ({ navigation }: Props) => {
     const setName = async (value: string) => {
       try {
         await AsyncStorage.setItem("selectedIncident", value);
+        await AsyncStorage.setItem("reportName", reportName);
       } catch (e) {
         console.log(e);
       }
@@ -49,7 +50,7 @@ const SelectIncident = ({ navigation }: Props) => {
       console.log(incident);
       setName(JSON.stringify(incident));
     }
-  }, [selectedIncident]);
+  }, [selectedIncident, reportName]);
 
   const createReport = async () => {
     axios

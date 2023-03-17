@@ -19,7 +19,7 @@ import Checkbox from "../components/Checkbox";
 import { scale } from "react-native-size-matters";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import SaveAndSharePDF from "../utils/pdfExport.js";
+import SaveAndSharePDF from "../utils/pdfExport";
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
@@ -108,10 +108,7 @@ const ReportTasks = ({ route, navigation }: Props) => {
             <Icon name="arrow-back-ios" type="material"></Icon>
           </Pressable>
           <Text style={styles.header}>{reportName}</Text>
-          { <Pressable onPress={() => navigation.navigate("")} disabled={true}>
-            <Icon name="arrow-forward-ios" type="material"></Icon>
-          </Pressable> }
-           <SaveAndSharePDF />
+          <SaveAndSharePDF />
         </View>
         <View style={styles.tasksContainer}>
           <FlatList
