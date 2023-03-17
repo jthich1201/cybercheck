@@ -15,6 +15,9 @@ import { Icon } from "@rneui/themed";
 import { TaskList } from "../constants/taskList";
 import Checkbox from "../components/Checkbox";
 import { scale } from "react-native-size-matters";
+import { Task } from "../types/Tasks";
+import {v4 as uuidv4} from 'uuid';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -74,6 +77,26 @@ const ReportTasks = ({ route, navigation }: Props) => {
       console.log(`TaskId: ${task.TaskId}, TaskStatus: ${task.TaskStatus}`);
     }
   };
+
+  const createTasks = async() => {
+    //create Task objects from reportPrompts
+    let tasks: Task[] = [];
+    reportPrompts.forEach((prompt) => {
+      let task: Task = {
+        taskId: uuidv4(),
+        title: prompt.text,
+        assignee: 'me',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        reportId: uuidv4(),
+        completed: false
+      };
+      tasks.push(task);
+    });
+      await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
+
+  };
+
   return (
     <>
       <SafeAreaView
