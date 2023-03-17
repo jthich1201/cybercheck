@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
-import { scale } from "react-native-size-matters";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -24,7 +23,6 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 const TaskDescription = ({ route, navigation }: Props) => {
   const [description, setDescription] = useState("");
   let { reportName } = route.params;
-  let { item } = route.params;
 
   return (
     <SafeAreaView
@@ -48,7 +46,7 @@ const TaskDescription = ({ route, navigation }: Props) => {
       </View>
       <View style={styles.contentContainer}>
         <View style={styles.commentContainer}>
-          <Text style={styles.commentText}>{item.text}</Text>
+          <Text style={styles.commentText}>Tell Us What You Did</Text>
         </View>
         <TextInput
           multiline
@@ -106,7 +104,7 @@ const styles = StyleSheet.create({
     color: "black",
     fontWeight: "bold",
     textAlign: "center",
-    fontSize: scale(16),
+    fontSize: 25,
   },
   input: {
     marginTop: 20,
