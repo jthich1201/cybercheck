@@ -27,6 +27,23 @@ const ReportTasks = ({ route, navigation }: Props) => {
   let { reportName } = route.params;
   const [completedTasks, setCompletedTasks] = useState(0);
   const [remainingTasks, setRemainingTasks] = useState(TaskList.length);
+  const [selectedIncident, setSelectedIncident] = useState("");
+  const [reportPrompts, setReportPrompts] = useState<Prompt[]>([]);
+
+  useEffect(() => {
+    const getSelectedIncident = async () => {
+      try {
+        const value = await AsyncStorage.getItem("selectedIncident");
+        console.log("executing getSelectedIncident");
+        if (value !== null) {
+          setSelectedIncident(value);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+    getSelectedIncident();
+  }, []);
 
   const getCheckboxStatus = (checked: boolean, taskId: number): void => {
     console.log(`checked: ${!checked}, taskId: ${taskId}`);

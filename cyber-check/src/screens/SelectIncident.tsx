@@ -34,7 +34,21 @@ const SelectIncident = ({ navigation }: Props) => {
       : "Null";
   };
 
-  console.log(getSelectedIncident(selectedIncident));
+  useEffect(() => {
+    const setName = async (value: string) => {
+      try {
+        await AsyncStorage.setItem("selectedIncident", value);
+      } catch (e) {
+        console.log(e);
+      }
+    };
+    if (selectedIncident != -1) {
+      console.log("reached");
+      let incident = getSelectedIncident(selectedIncident);
+      console.log(incident);
+      setName(JSON.stringify(incident));
+    }
+  }, [selectedIncident]);
 
   const createReport = async () => {
     axios.post("http//localhost:3001/Reports/createReport", { selectedIncident: getSelectedIncident( selectedIncident), name: reportName})
