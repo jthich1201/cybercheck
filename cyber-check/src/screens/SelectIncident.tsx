@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -16,6 +16,7 @@ import { Dropdown } from "react-native-element-dropdown";
 import { Icon } from "@rneui/base";
 import { scale } from "react-native-size-matters";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -34,19 +35,35 @@ const SelectIncident = ({ navigation }: Props) => {
       : "Null";
   };
 
-  console.log(getSelectedIncident(selectedIncident));
+  useEffect(() => {
+    const setName = async (value: string) => {
+      try {
+        await AsyncStorage.setItem("selectedIncident", value);
+      } catch (e) {
+        console.log(e);
+      }
+    };
+    if (selectedIncident != -1) {
+      console.log("reached");
+      let incident = getSelectedIncident(selectedIncident);
+      console.log(incident);
+      setName(JSON.stringify(incident));
+    }
+  }, [selectedIncident]);
 
   const createReport = async () => {
-    axios.post("http//localhost:3001/Reports/createReport", { selectedIncident: getSelectedIncident( selectedIncident), name: reportName})
-    .then((res) => {
-      console.log(res);
-    })
-    .catch((err) => {
-      console.log(err);
-    })
-    
-  }
-
+    axios
+      .post("http//localhost:3001/Reports/createReport", {
+        selectedIncident: getSelectedIncident(selectedIncident),
+        name: reportName,
+      })
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   return (
     <SafeAreaView

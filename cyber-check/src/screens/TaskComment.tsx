@@ -21,7 +21,7 @@ const windowHeight = Dimensions.get("window").height;
 
 const TaskComment = ({ navigation, route }: Props) => {
   let { reportName } = route.params;
-  let { task } = route.params;
+  let { item } = route.params;
   const [inputText, setInputText] = useState("");
   const [commentText, setCommentText] = useState("");
 
@@ -39,7 +39,7 @@ const TaskComment = ({ navigation, route }: Props) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-        comment: comment 
+          comment: comment,
         }),
       });
       const result = await response.json();
@@ -50,6 +50,9 @@ const TaskComment = ({ navigation, route }: Props) => {
       console.log(error);
     }
   };
+
+  //TODO: add get request to get task info from backend + get comments from backend
+
   return (
     <SafeAreaView
       style={[
@@ -66,21 +69,24 @@ const TaskComment = ({ navigation, route }: Props) => {
           <Icon name="arrow-back-ios" type="material"></Icon>
         </Pressable>
         <Text style={styles.header}>{reportName}</Text>
-        <Pressable style={styles.button} onPress={submitComment}>
-            <Text style={styles.buttonText}>Add Comments</Text>
-          </Pressable>
+        <Pressable onPress={() => navigation.navigate("")} disabled={true}>
+          <Icon name="arrow-forward-ios" type="material"></Icon>
+        </Pressable>
       </View>
 
       <View style={styles.contentContainer}>
         <View style={{ alignItems: "center", justifyContent: "center" }}>
-          <Text style={styles.taskName}>{task.TaskName}</Text>
+          <Text style={styles.taskName}>
+            {item.text.substring(0, 30) + "..."}
+          </Text>
         </View>
         <TextInput
           multiline={true}
           style={styles.description}
           onChangeText={(description) => setInputText(description)}
-          placeholder="Description..."
+          placeholder="Description... will be pulled from database"
           value={inputText}
+          editable={false}
         />
         <Text style={styles.taskName}>
           Completed by: Billy {"\n"} On Feb 10, 2023
