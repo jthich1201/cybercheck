@@ -10,6 +10,7 @@ import ReportTasks from "./src/screens/ReportTasks";
 import TeamCollab from "./src/screens/TeamCollab";
 import TaskComment from "./src/screens/TaskComment";
 import TaskDescription from "./src/screens/TaskDescription";
+import Submit from "./src/screens/Submit";
 
 import linking from "./src/constants/linking";
 const Stack = createNativeStackNavigator();
@@ -58,6 +59,13 @@ const App = () => {
           <Stack.Screen
             name="Quiz"
             component={Quiz}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="Submit"
+            component={Submit}
             options={{
               headerShown: false,
             }}

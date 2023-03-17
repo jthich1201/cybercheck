@@ -291,15 +291,17 @@ const SignIn = ({ navigation }: Props) => {
           <Pressable
             style={styles.button}
             onPress={() => {
-              if (auth) {
-                navigation.navigate("RecentReportsTab", {
-                  screen: "Home",
-                  params: { user: userInfo },
-                });
-              } else {
-                promptAsync({ useProxy: true, showInRecents: true });
-              }
-            }}
+              navigation.navigate("RecentReportsTab", {
+                screen: "Home",});}}
+            //   if (auth) {
+            //     navigation.navigate("RecentReportsTab", {
+            //       screen: "Home",
+            //       params: { user: userInfo },
+            //     });
+            //   } else {
+            //     promptAsync({ useProxy: true, showInRecents: true });
+            //   }
+            // }}
           >
             <FAIcon name="google" color="#FFFFFF" size={25} />
             <Text style={styles.buttonText}>{"\t"}Sign in with Google</Text>
