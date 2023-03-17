@@ -315,7 +315,11 @@ const SignIn = ({ navigation }: Props) => {
                 });
               } else {
                 promptAsync({ useProxy: true, showInRecents: true });
-              }
+              }*/
+              navigation.navigate("RecentReportsTab", {
+                screen: "Home",
+                params: { user: userInfo },
+              });
             }}
           >
             <FAIcon name="google" color="#FFFFFF" size={25} />

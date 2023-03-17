@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -9,14 +9,14 @@ import {
   StatusBar,
   TouchableOpacity,
   Pressable,
-  FlatList,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
 import { TaskList } from "../constants/taskList";
-import reportPromptList from "../constants/reportPrompts.json";
 import Checkbox from "../components/Checkbox";
 import { scale } from "react-native-size-matters";
+import { Task } from "../types/Tasks";
+import {v4 as uuidv4} from 'uuid';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import SaveAndSharePDF from "../utils/pdfExport";
@@ -26,11 +26,6 @@ const windowHeight = Dimensions.get("window").height;
 type RootStackParamList = {};
 
 type Props = NativeStackScreenProps<RootStackParamList>;
-
-type Prompt = {
-  id: number;
-  text: string;
-};
 
 const ReportTasks = ({ route, navigation }: Props) => {
   let { reportName } = route.params;
@@ -54,19 +49,6 @@ const ReportTasks = ({ route, navigation }: Props) => {
     getSelectedIncident();
   }, []);
 
-  useEffect(() => {
-    const setPrompts = () => {
-      let prompts = reportPromptList.incidentReponse[0].prompts;
-      const arr = Object.entries(prompts).map(([id, text]) => ({
-        id: parseInt(id),
-        text,
-      }));
-      if (reportPrompts != arr) setReportPrompts(arr);
-    };
-    setPrompts();
-  }, [selectedIncident]);
-
-  //Need to change this so it uses initialized tasks (OD-103) and update status of tasks once they are completed
   const getCheckboxStatus = (checked: boolean, taskId: number): void => {
     console.log(`checked: ${!checked}, taskId: ${taskId}`);
     TaskList.find((task) => {
@@ -91,6 +73,31 @@ const ReportTasks = ({ route, navigation }: Props) => {
     });
   };
 
+  const printTaskList = () => {
+    for (let task of TaskList) {
+      console.log(`TaskId: ${task.TaskId}, TaskStatus: ${task.TaskStatus}`);
+    }
+  };
+
+  const createTasks = async() => {
+    //create Task objects from reportPrompts
+    let tasks: Task[] = [];
+    reportPrompts.forEach((prompt) => {
+      let task: Task = {
+        taskId: uuidv4(),
+        title: prompt.text,
+        assignee: 'me',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        reportId: uuidv4(),
+        completed: false
+      };
+      tasks.push(task);
+    });
+      await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
+
+  };
+
   return (
     <>
       <SafeAreaView
@@ -111,37 +118,27 @@ const ReportTasks = ({ route, navigation }: Props) => {
           <SaveAndSharePDF />
         </View>
         <View style={styles.tasksContainer}>
-          <FlatList
-            data={reportPrompts}
-            renderItem={({ item }) => (
-              <View key={item.id} style={styles.taskContainer}>
+          {TaskList.map((task) => {
+            return (
+              <View key={task.TaskId} style={styles.taskContainer}>
                 <Checkbox
                   getCheckboxStatus={getCheckboxStatus}
-                  taskId={item.id}
+                  taskId={task.TaskId}
                 />
                 <TouchableOpacity
                   onPress={() =>
-                    navigation.navigate("TaskDescription", {
-                      reportName,
-                      item,
-                    })
-                  }
-                  onLongPress={() =>
                     navigation.navigate("TaskComment", {
                       reportName,
-                      item,
+                      task,
                     })
                   }
                   style={styles.taskTextContainer}
                 >
-                  <Text style={styles.taskText}>
-                    {item.text.substring(0, 70) + "..."}
-                  </Text>
+                  <Text style={styles.taskText}>{task.TaskName}</Text>
                 </TouchableOpacity>
               </View>
-            )}
-            keyExtractor={(item) => item.id.toString()}
-          />
+            );
+          })}
         </View>
       </SafeAreaView>
       <View style={styles.taskCountContainer}>
@@ -181,22 +178,17 @@ const styles = StyleSheet.create({
     fontSize: 40,
   },
   tasksContainer: {
-    // marginTop: 20,
-    flex: 1,
-    // overflow: "scroll",
-    padding: scale(16),
+    marginTop: 20,
   },
   taskContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: scale(8),
+    justifyContent: "center",
     margin: 10,
   },
   taskTextContainer: {
-    flex: 1,
+    justifyContent: "center",
     borderRadius: 10,
     backgroundColor: "rgba(217, 217, 217, 0.25)",
-    marginLeft: scale(16),
   },
   dropdown: {
     marginTop: 15,
@@ -206,9 +198,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   taskText: {
+    fontSize: 15,
     fontWeight: "bold",
     padding: 15,
-    fontSize: scale(16),
   },
   taskCountContainer: {
     flex: 1.5,

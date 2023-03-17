@@ -2,7 +2,9 @@
 import { platform } from "os";
 import { userService } from "../services/index";
 
-export const GetAllUsers = (req: any, res: any) => {
+
+
+export const GetAllUsers = (req: any, res : any) => {
     const userList = userService.ReturnUserList();
     return res.json(userList);
 }
