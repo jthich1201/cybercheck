@@ -8,12 +8,12 @@ export const ReturnUserList = () => {
   return userData;
 };
 
-export const SaveUserData = async (name: string, email: string, role: string, platform: string, platformId: string) => {
+export const SaveUserData = async (id: string, name: string, email: string, role: string, platform: string, platformId: string) => {
   try {
     const check = await checkUser(email);
     console.log(check);
     if (check) return { error: "User already exists" }
-    const id = uuidv4();
+    // const id = uuidv4();
     const created = new Date();
     const result = await incidentResponseDbPool.query("INSERT INTO users (user_id, name, email, role, platform, platform_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
       [id, name, email, role, platform, platformId, created, created]);

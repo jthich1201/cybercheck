@@ -244,6 +244,7 @@ const SignIn = ({ navigation }: Props) => {
             .then((res) => {
               if (res.type === "success") {
                 console.log(res);
+                let id = uuidv4();
                 var userData = {
                   userId: uuidv4(),
                   name: res.displayName,
@@ -299,8 +300,9 @@ const SignIn = ({ navigation }: Props) => {
             style={styles.button}
             onPress={() => {
               if (auth) {
+                let id = uuidv4();
                 const userData = {
-                  userId: uuidv4(),
+                  userId: id,
                   name: userInfo.name,
                   email: userInfo.email,
                   role: admin ? "admin" : "user",

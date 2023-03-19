@@ -13,6 +13,7 @@ import {
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
 import { scale } from "react-native-size-matters";
+import { getUser } from "../hooks/getUser";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -22,9 +23,38 @@ type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 const TaskDescription = ({ route, navigation }: Props) => {
-  const [description, setDescription] = useState("");
   let { reportName } = route.params;
   let { item } = route.params;
+  let currentUser = getUser();
+  console.log(currentUser);
+  const [descriptionText, setDescriptionText] = useState("");
+
+  const submitDescription = async () => {
+    const description = descriptionText.trim();
+    if (!description) {
+      return;
+    }
+
+    try {
+      const response = await fetch("http://10.0.0.129:3001/api/descriptions", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          description: description,
+          user_id: currentUser?.userId,
+        }),
+      });
+      const result = await response.json();
+
+      console.log(result);
+    } catch (error) {
+      // handle error
+      console.log(error);
+    }
+  };
 
   return (
     <SafeAreaView
@@ -54,18 +84,12 @@ const TaskDescription = ({ route, navigation }: Props) => {
           multiline
           placeholder="Enter Description"
           style={styles.input}
-          onChangeText={(input) => setDescription(input)}
-          value={description}
+          onChangeText={(input) => setDescriptionText(input)}
+          value={descriptionText}
         />
         <View style={{}}>
-          <Pressable
-            style={styles.button}
-            onPress={() => {
-              //post request to add description to report
-              console.log(description);
-            }}
-          >
-            <Text style={styles.buttonText}>Submit</Text>
+          <Pressable style={styles.button} onPress={submitDescription}>
+            <Text style={styles.buttonText}>Add Description</Text>
           </Pressable>
         </View>
       </View>

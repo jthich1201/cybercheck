@@ -18,10 +18,12 @@ app.get('/', (req: Request, res: Response) => {
 
 const userRoute = require("./routes/userRoutes");
 const commentsRoute = require("./routes/Comments");
+const descriptionsRoute = require("./routes/Descriptions");
 const reportRoute = require("./routes/reportRoutes")
 
 app.use('/Users', userRoute);
 app.use("/api/comments", commentsRoute);
+app.use("/api/descriptions", descriptionsRoute);
 app.use('/Reports', reportRoute);
 
 
