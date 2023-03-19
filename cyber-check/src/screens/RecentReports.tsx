@@ -64,13 +64,10 @@ const RecentReportsTab = () => {
 
   const getReports = async () => {
     axios
-      .get("http://localhost:3001/Reports/getReports/487ce5ba-7717-4b9a-b59d-dfd91836f431", {
-        data: {userId: '487ce5ba-7717-4b9a-b59d-dfd91836f431'}
+      .get("http://192.168.4.56:3001/Reports/getReports/487ce5ba-7717-4b9a-b59d-dfd91836f431", {
       })
       .then((res) => {
-        console.log(res);
-        let reports = res.data.results;
-        setData(reports);
+        setData(res.data);
       })
       .catch((err) => {
         console.log(err);
@@ -78,10 +75,9 @@ const RecentReportsTab = () => {
   };
 
   useEffect(() => {
-    console.log("recent reports")
     getReports();
     console.log(data);
-  }, [getReports]);
+  }, []);
   
 
 
@@ -173,52 +169,6 @@ const RecentReportsScreen = ({ navigation }: Props) => {
     </>
   );
 }
-// const DATA = [
-//   {
-//     id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-//     title: "First Report",
-//   },
-//   {
-//     id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-//     title: "Second Report",
-//   },
-//   {
-//     id: "58694a0f-3da1-471f-bd96-145571e29d72",
-//     title: "Third Report",
-//   },
-//   {
-//     id: "3434af33-34a3-4332-aaaa-56257142ed32",
-//     title: "Fourth Report",
-//   },
-//   {
-//     id: "3434af33-34af-4332-aaaa-56257142ed32",
-//     title: "Fifth Report",
-//   },
-//   {
-//     id: "3434af33-3fa3-4332-aaaa-56257142ed32",
-//     title: "Sixth Report",
-//   },
-//   {
-//     id: "3434af33-34f3-4332-aaaa-56257142ed32",
-//     title: "Seven Report",
-//   },
-//   {
-//     id: "3434af33-34a3-43f2-aaaa-56257142ed32",
-//     title: "Eight Report",
-//   },
-//   {
-//     id: "3434af33-3fa3-4332-aafa-56257142ed32",
-//     title: "Ninth Report",
-//   },
-//   {
-//     id: "3434af33-34f3-4332-ffaa-56257142ed32",
-//     title: "Tenth Report",
-//   },
-//   {
-//     id: "3434af33-34a3-43f2-aaaa-56233142ed32",
-//     title: "Eleventh Report",
-//   },
-// ];
 
 const styles = StyleSheet.create({
   container: {
