@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -9,17 +9,21 @@ import {
   StatusBar,
   TouchableOpacity,
   Pressable,
+  FlatList,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
 import { TaskList } from "../constants/taskList";
+import { ReportPrompts } from "../constants/reportPrompts";
 import Checkbox from "../components/Checkbox";
 import { scale } from "react-native-size-matters";
-import { Task } from "../types/Tasks";
-import {v4 as uuidv4} from 'uuid';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import SaveAndSharePDF from "../utils/pdfExport";
+import { Task } from "../types/Tasks";
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
+import { getUser } from "../hooks/getUser";
+
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
@@ -27,12 +31,19 @@ type RootStackParamList = {};
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
+type Prompt = {
+  id: number;
+  text: string;
+};
+
 const ReportTasks = ({ route, navigation }: Props) => {
   let { reportName } = route.params;
   const [completedTasks, setCompletedTasks] = useState(0);
-  const [remainingTasks, setRemainingTasks] = useState(TaskList.length);
+  const [remainingTasks, setRemainingTasks] = useState(0);
   const [selectedIncident, setSelectedIncident] = useState("");
   const [reportPrompts, setReportPrompts] = useState<Prompt[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const user = getUser();
 
   useEffect(() => {
     const getSelectedIncident = async () => {
@@ -47,55 +58,46 @@ const ReportTasks = ({ route, navigation }: Props) => {
       }
     };
     getSelectedIncident();
+    createTasks();
   }, []);
 
-  const getCheckboxStatus = (checked: boolean, taskId: number): void => {
-    console.log(`checked: ${!checked}, taskId: ${taskId}`);
-    TaskList.find((task) => {
-      if (task.TaskId === taskId) {
-        task.TaskStatus = !checked ? "Completed" : "Pending";
-        if (!checked) {
-          if (completedTasks <= 4) {
-            setCompletedTasks(completedTasks + 1);
-          }
-          if (remainingTasks >= 0) {
-            setRemainingTasks(remainingTasks - 1);
-          }
+  const getCheckboxStatus = (checked: boolean, taskId: string): void => {
+    console.log(`checked: ${checked}, taskId: ${taskId}`);
+    tasks.find((task) => {
+      if (task.taskId === taskId) {
+        console.log(checked);
+        task.completed = checked ? true : false;
+        if (checked) {
+          setCompletedTasks(completedTasks + 1);
+          setRemainingTasks(remainingTasks - 1);
         } else {
-          if (completedTasks >= 0) {
-            setCompletedTasks(completedTasks - 1);
-          }
-          if (remainingTasks <= 4) {
-            setRemainingTasks(remainingTasks + 1);
-          }
+          setCompletedTasks(completedTasks - 1);
+          setRemainingTasks(remainingTasks + 1);
         }
       }
     });
   };
 
-  const printTaskList = () => {
-    for (let task of TaskList) {
-      console.log(`TaskId: ${task.TaskId}, TaskStatus: ${task.TaskStatus}`);
-    }
-  };
-
-  const createTasks = async() => {
+  const createTasks = async () => {
     //create Task objects from reportPrompts
     let tasks: Task[] = [];
-    reportPrompts.forEach((prompt) => {
+    if (user) var name = user.name;
+    ReportPrompts.incidentReponse[0].prompts?.forEach((prompt) => {
       let task: Task = {
         taskId: uuidv4(),
         title: prompt.text,
-        assignee: 'me',
+        assignee: name,
         createdAt: new Date(),
         updatedAt: new Date(),
         reportId: uuidv4(),
-        completed: false
+        completed: false,
       };
       tasks.push(task);
     });
-      await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
-
+    await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+    console.log(tasks);
+    setTasks(tasks);
+    setRemainingTasks(tasks.length);
   };
 
   return (
@@ -118,27 +120,37 @@ const ReportTasks = ({ route, navigation }: Props) => {
           <SaveAndSharePDF />
         </View>
         <View style={styles.tasksContainer}>
-          {TaskList.map((task) => {
-            return (
-              <View key={task.TaskId} style={styles.taskContainer}>
+          <FlatList
+            data={tasks}
+            renderItem={({ item }) => (
+              <View key={item.taskId} style={styles.taskContainer}>
                 <Checkbox
                   getCheckboxStatus={getCheckboxStatus}
-                  taskId={task.TaskId}
+                  taskId={item.taskId}
                 />
                 <TouchableOpacity
                   onPress={() =>
+                    navigation.navigate("TaskDescription", {
+                      reportName,
+                      item,
+                    })
+                  }
+                  onLongPress={() =>
                     navigation.navigate("TaskComment", {
                       reportName,
-                      task,
+                      item,
                     })
                   }
                   style={styles.taskTextContainer}
                 >
-                  <Text style={styles.taskText}>{task.TaskName}</Text>
+                  <Text style={styles.taskText}>
+                    {item.title.substring(0, 70) + "..."}
+                  </Text>
                 </TouchableOpacity>
               </View>
-            );
-          })}
+            )}
+            keyExtractor={(item) => item.taskId.toString()}
+          />
         </View>
       </SafeAreaView>
       <View style={styles.taskCountContainer}>
@@ -178,17 +190,20 @@ const styles = StyleSheet.create({
     fontSize: 40,
   },
   tasksContainer: {
-    marginTop: 20,
+    flex: 1,
+    padding: scale(16),
   },
   taskContainer: {
     flexDirection: "row",
-    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: scale(8),
     margin: 10,
   },
   taskTextContainer: {
-    justifyContent: "center",
+    flex: 1,
     borderRadius: 10,
     backgroundColor: "rgba(217, 217, 217, 0.25)",
+    marginLeft: scale(16),
   },
   dropdown: {
     marginTop: 15,
@@ -198,9 +213,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   taskText: {
-    fontSize: 15,
     fontWeight: "bold",
     padding: 15,
+    fontSize: scale(16),
   },
   taskCountContainer: {
     flex: 1.5,

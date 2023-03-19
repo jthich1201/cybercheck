@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -16,6 +16,10 @@ import { Dropdown } from "react-native-element-dropdown";
 import { Icon } from "@rneui/base";
 import { scale } from "react-native-size-matters";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Report } from "../types/Report";
+import { getUser } from "../hooks/getUser";
+import { v4 as uuidv4 } from "uuid";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -33,6 +37,8 @@ const SelectIncident = ({ navigation }: Props) => {
       ? IncidentOptions[selectedIncident].label
       : "Null";
   };
+
+  const user = getUser();
 
   useEffect(() => {
     const setName = async (value: string) => {
@@ -52,16 +58,30 @@ const SelectIncident = ({ navigation }: Props) => {
   }, [selectedIncident, reportName]);
 
   const createReport = async () => {
-    axios.post("http//localhost:3001/Reports/createReport", { selectedIncident: getSelectedIncident( selectedIncident), name: reportName})
-    .then((res) => {
-      console.log(res);
-    })
-    .catch((err) => {
-      console.log(err);
-    })
-    
-  }
-
+    //
+    var name = "Anonymous";
+    if (user) name = user.name;
+    const report: Report = {
+      reportId: uuidv4(),
+      title: reportName,
+      creator: name,
+      created_at: new Date(),
+      type: getSelectedIncident(selectedIncident),
+      status: "Draft",
+      orgId: "1234",
+      groupId: "1234",
+      updatedAt: new Date(),
+    };
+    axios
+      .post("http//localhost:3001/Reports/createReport", report) //need to change backend api to match body fields
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    await AsyncStorage.setItem("report", JSON.stringify(report));
+  };
 
   return (
     <SafeAreaView
