@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FlatList,
   TouchableOpacity,
@@ -14,7 +14,7 @@ import { Icon } from "@rneui/base";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 // import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-
+import axios from "axios";
 import { StatusBar } from "react-native";
 
 import Home from "./Home";
@@ -62,6 +62,30 @@ const RecentReportsTab = () => {
     );
   };
 
+  const getReports = async () => {
+    axios
+      .get("http://localhost:3001/Reports/getReports/487ce5ba-7717-4b9a-b59d-dfd91836f431", {
+        data: {userId: '487ce5ba-7717-4b9a-b59d-dfd91836f431'}
+      })
+      .then((res) => {
+        console.log(res);
+        let reports = res.data.results;
+        setData(reports);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  useEffect(() => {
+    console.log("recent reports")
+    getReports();
+    console.log(data);
+  }, [getReports]);
+  
+
+
+
   return (
     <View style={{ alignItems: "center" }}>
       <SearchBar
@@ -71,8 +95,8 @@ const RecentReportsTab = () => {
         setClicked={setClicked}
       ></SearchBar>
       <View style={{ justifyContent: "center", alignItems: "center" }}>
-        <FlatList
-          data={DATA}
+        <FlatList 
+          data={data}
           columnWrapperStyle={styles.row}
           numColumns={2}
           renderItem={renderItem}
@@ -84,116 +108,117 @@ const RecentReportsTab = () => {
   );
 };
 
-const RecentReportsScreen = ({ navigation }: Props) => (
-  <>
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <SafeAreaView
-        style={[
-          styles.container,
-          {
-            marginTop: Platform.OS == "android" ? StatusBar.currentHeight : 0,
-          },
-        ]}
-      >
-        <View style={styles.headerContainer}>
-          <View>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("ManageAccount" as never)}
-            >
-              <Icon name="settings" type="material"></Icon>
-            </TouchableOpacity>
+const RecentReportsScreen = ({ navigation }: Props) => {
+  return (
+    <>
+      <View style={{ flex: 1, backgroundColor: "#fff" }}>
+        <SafeAreaView
+          style={[
+            styles.container,
+            {
+              marginTop: Platform.OS == "android" ? StatusBar.currentHeight : 0,
+            },
+          ]}
+        >
+          <View style={styles.headerContainer}>
+            <View>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("ManageAccount" as never)}
+              >
+                <Icon name="settings" type="material"></Icon>
+              </TouchableOpacity>
+            </View>
+            <View>
+              <Text style={styles.header}>Recent Reports</Text>
+            </View>
+            <View>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("SelectIncident" as never)}
+              >
+                <Icon name="tab" type="material"></Icon>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View>
-            <Text style={styles.header}>Recent Reports</Text>
-          </View>
-          <View>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("SelectIncident" as never)}
-            >
-              <Icon name="tab" type="material"></Icon>
-            </TouchableOpacity>
-          </View>
+        </SafeAreaView>
+        <View style={{ flex: 20 }}>
+          <Tab.Navigator>
+            <Tab.Screen
+              name="Home"
+              component={Home}
+              options={{
+                headerShown: false,
+                tabBarIcon: ({ color, size }) => (
+                  <Icon name="home" color={color} size={size} />
+                ),
+              }}
+            />
+            <Tab.Screen
+              name="Recent Reports"
+              component={RecentReportsTab}
+              options={{
+                headerShown: false,
+                tabBarIcon: ({ color, size }) => (
+                  <Icon
+                    name="file-outline"
+                    color={color}
+                    size={size}
+                    type="material-community"
+                  ></Icon>
+                ),
+              }}
+            />
+          </Tab.Navigator>
         </View>
-      </SafeAreaView>
-      <View style={{ flex: 20 }}>
-        <Tab.Navigator>
-          <Tab.Screen
-            name="Home"
-            component={Home}
-            options={{
-              headerShown: false,
-              tabBarIcon: ({ color, size }) => (
-                <Icon name="home" color={color} size={size} />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="Recent Reports"
-            component={RecentReportsTab}
-            options={{
-              headerShown: false,
-              tabBarIcon: ({ color, size }) => (
-                <Icon
-                  name="file-outline"
-                  color={color}
-                  size={size}
-                  type="material-community"
-                ></Icon>
-              ),
-            }}
-          />
-        </Tab.Navigator>
       </View>
-    </View>
-  </>
-);
-
-const DATA = [
-  {
-    id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
-    title: "First Report",
-  },
-  {
-    id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
-    title: "Second Report",
-  },
-  {
-    id: "58694a0f-3da1-471f-bd96-145571e29d72",
-    title: "Third Report",
-  },
-  {
-    id: "3434af33-34a3-4332-aaaa-56257142ed32",
-    title: "Fourth Report",
-  },
-  {
-    id: "3434af33-34af-4332-aaaa-56257142ed32",
-    title: "Fifth Report",
-  },
-  {
-    id: "3434af33-3fa3-4332-aaaa-56257142ed32",
-    title: "Sixth Report",
-  },
-  {
-    id: "3434af33-34f3-4332-aaaa-56257142ed32",
-    title: "Seven Report",
-  },
-  {
-    id: "3434af33-34a3-43f2-aaaa-56257142ed32",
-    title: "Eight Report",
-  },
-  {
-    id: "3434af33-3fa3-4332-aafa-56257142ed32",
-    title: "Ninth Report",
-  },
-  {
-    id: "3434af33-34f3-4332-ffaa-56257142ed32",
-    title: "Tenth Report",
-  },
-  {
-    id: "3434af33-34a3-43f2-aaaa-56233142ed32",
-    title: "Eleventh Report",
-  },
-];
+    </>
+  );
+}
+// const DATA = [
+//   {
+//     id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
+//     title: "First Report",
+//   },
+//   {
+//     id: "3ac68afc-c605-48d3-a4f8-fbd91aa97f63",
+//     title: "Second Report",
+//   },
+//   {
+//     id: "58694a0f-3da1-471f-bd96-145571e29d72",
+//     title: "Third Report",
+//   },
+//   {
+//     id: "3434af33-34a3-4332-aaaa-56257142ed32",
+//     title: "Fourth Report",
+//   },
+//   {
+//     id: "3434af33-34af-4332-aaaa-56257142ed32",
+//     title: "Fifth Report",
+//   },
+//   {
+//     id: "3434af33-3fa3-4332-aaaa-56257142ed32",
+//     title: "Sixth Report",
+//   },
+//   {
+//     id: "3434af33-34f3-4332-aaaa-56257142ed32",
+//     title: "Seven Report",
+//   },
+//   {
+//     id: "3434af33-34a3-43f2-aaaa-56257142ed32",
+//     title: "Eight Report",
+//   },
+//   {
+//     id: "3434af33-3fa3-4332-aafa-56257142ed32",
+//     title: "Ninth Report",
+//   },
+//   {
+//     id: "3434af33-34f3-4332-ffaa-56257142ed32",
+//     title: "Tenth Report",
+//   },
+//   {
+//     id: "3434af33-34a3-43f2-aaaa-56233142ed32",
+//     title: "Eleventh Report",
+//   },
+// ];
 
 const styles = StyleSheet.create({
   container: {

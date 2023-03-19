@@ -291,14 +291,18 @@ const SignIn = ({ navigation }: Props) => {
           <Pressable
             style={styles.button}
             onPress={() => {
-              if (auth) {
-                navigation.navigate("RecentReportsTab", {
-                  screen: "Home",
-                  params: { user: userInfo },
-                });
-              } else {
-                promptAsync({ useProxy: true, showInRecents: true });
-              }
+              // if (auth) {
+              //   navigation.navigate("RecentReportsTab", {
+              //     screen: "Home",
+              //     params: { user: userInfo },
+              //   });
+              // } else {
+              //   promptAsync({ useProxy: true, showInRecents: true });
+              // }
+              navigation.navigate("RecentReportsTab", {
+                screen: "Home",
+                params: { user: ["487ce5ba-7717-4b9a-b59d-dfd91836f431", "onlydevsDONOTDELETE", "onlydevs1@outlook.com"] },
+              });
             }}
           >
             <FAIcon name="google" color="#FFFFFF" size={25} />
