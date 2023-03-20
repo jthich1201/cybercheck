@@ -17,6 +17,9 @@ import { Icon } from "@rneui/base";
 import { scale } from "react-native-size-matters";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Report } from "../types/Report";
+import { getUser } from "../hooks/getUser";
+import { v4 as uuidv4 } from "uuid";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -35,10 +38,13 @@ const SelectIncident = ({ navigation }: Props) => {
       : "Null";
   };
 
+  const user = getUser();
+
   useEffect(() => {
     const setName = async (value: string) => {
       try {
-        await AsyncStorage.setItem("key", value);
+        await AsyncStorage.setItem("selectedIncident", value);
+        await AsyncStorage.setItem("reportName", reportName);
       } catch (e) {
         console.log(e);
       }
@@ -49,20 +55,32 @@ const SelectIncident = ({ navigation }: Props) => {
       console.log(incident);
       setName(JSON.stringify(incident));
     }
-  }, [selectedIncident]);
+  }, [selectedIncident, reportName]);
 
   const createReport = async () => {
+    //
+    var name = "Anonymous";
+    if (user) name = user.name;
+    const report: Report = {
+      reportId: uuidv4(),
+      title: reportName,
+      creator: name,
+      created_at: new Date(),
+      type: getSelectedIncident(selectedIncident),
+      status: "Draft",
+      orgId: "1234",
+      groupId: "1234",
+      updatedAt: new Date(),
+    };
     axios
-      .post("http//localhost:3001/Reports/createReport", {
-        selectedIncident: getSelectedIncident(selectedIncident),
-        name: reportName,
-      })
+      .post("http//localhost:3001/Reports/createReport", report) //need to change backend api to match body fields
       .then((res) => {
         console.log(res);
       })
       .catch((err) => {
         console.log(err);
       });
+    await AsyncStorage.setItem("report", JSON.stringify(report));
   };
 
   return (

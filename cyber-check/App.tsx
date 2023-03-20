@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Signin from "./src/screens/SignIn";
@@ -13,9 +13,18 @@ import TaskDescription from "./src/screens/TaskDescription";
 import Submit from "./src/screens/Submit";
 
 import linking from "./src/constants/linking";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const Stack = createNativeStackNavigator();
 
 const App = () => {
+  useEffect(() => {
+    const clearAsyncStorage = async () => {
+      await AsyncStorage.clear();
+    };
+    clearAsyncStorage();
+    console.log("Executing ----------------------------------------");
+  }, []);
+
   return (
     <>
       <NavigationContainer linking={linking}>

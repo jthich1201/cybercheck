@@ -8,10 +8,12 @@ import {
   TextInput,
   Platform,
   StatusBar,
-} from "react-native";
+} 
+from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Icon } from "@rneui/base";
+import { getUser } from "../hooks/getUser";
 
 type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
@@ -24,6 +26,7 @@ const windowHeight = Dimensions.get("window").height;
 const TaskComment = ({ navigation, route }: Props) => {
   let { reportName } = route.params;
   let { item } = route.params;
+  let currentUser = getUser();
   const [inputText, setInputText] = useState("");
   const [commentText, setCommentText] = useState("");
 
@@ -42,6 +45,7 @@ const TaskComment = ({ navigation, route }: Props) => {
         },
         body: JSON.stringify({
           comment: comment,
+          user_id: currentUser?.userId,
         }),
       });
       const result = await response.json();
@@ -52,8 +56,6 @@ const TaskComment = ({ navigation, route }: Props) => {
       console.log(error);
     }
   };
-
-  //TODO: add get request to get task info from backend + get comments from backend
 
   return (
     <SafeAreaView
@@ -79,7 +81,7 @@ const TaskComment = ({ navigation, route }: Props) => {
       <View style={styles.contentContainer}>
         <View style={{ alignItems: "center", justifyContent: "center" }}>
           <Text style={styles.taskName}>
-            {item.text.substring(0, 30) + "..."}
+            {item.title.substring(0, 30) + "..."}
           </Text>
         </View>
         <TextInput
@@ -94,14 +96,8 @@ const TaskComment = ({ navigation, route }: Props) => {
           Completed by: Billy {"\n"} On Feb 10, 2023
         </Text>
         <View style={{}}>
-          <Pressable
-            style={styles.button}
-            onPress={() => {
-              //post request to add comments
-              console.log(commentText);
-            }}
-          >
-            <Text style={styles.buttonText}> Add Comments</Text>
+          <Pressable style={styles.button} onPress={submitComment}>
+            <Text style={styles.buttonText}>Add Comments</Text>
           </Pressable>
         </View>
 

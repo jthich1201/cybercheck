@@ -2,15 +2,15 @@ import React, { useState, useEffect, useMemo } from "react";
 import { CheckBox, Icon } from "@rneui/themed";
 
 interface Props {
-  getCheckboxStatus: (checked: boolean, taskId: number) => void;
-  taskId: number;
+  getCheckboxStatus: (checked: boolean, taskId: string) => void;
+  taskId: string;
 }
 
 const Checkbox = ({ getCheckboxStatus, taskId }: Props) => {
   const [checked, setChecked] = useState(false);
 
   const sendData = () => {
-    getCheckboxStatus(checked, taskId);
+    getCheckboxStatus(!checked, taskId);
   };
 
   return (

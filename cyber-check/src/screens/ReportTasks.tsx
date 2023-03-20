@@ -14,10 +14,15 @@ import {
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
 import { TaskList } from "../constants/taskList";
-import reportPromptList from "../constants/reportPrompts.json";
+import { ReportPrompts } from "../constants/reportPrompts";
 import Checkbox from "../components/Checkbox";
 import { scale } from "react-native-size-matters";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import SaveAndSharePDF from "../utils/pdfExport";
+import { Task } from "../types/Tasks";
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
+import { getUser } from "../hooks/getUser";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -34,9 +39,11 @@ type Prompt = {
 const ReportTasks = ({ route, navigation }: Props) => {
   let { reportName } = route.params;
   const [completedTasks, setCompletedTasks] = useState(0);
-  const [remainingTasks, setRemainingTasks] = useState(TaskList.length);
+  const [remainingTasks, setRemainingTasks] = useState(0);
   const [selectedIncident, setSelectedIncident] = useState("");
   const [reportPrompts, setReportPrompts] = useState<Prompt[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const user = getUser();
 
   useEffect(() => {
     const getSelectedIncident = async () => {
@@ -44,7 +51,6 @@ const ReportTasks = ({ route, navigation }: Props) => {
         const value = await AsyncStorage.getItem("selectedIncident");
         console.log("executing getSelectedIncident");
         if (value !== null) {
-          console.log(JSON.parse(value));
           setSelectedIncident(value);
         }
       } catch (e) {
@@ -52,43 +58,46 @@ const ReportTasks = ({ route, navigation }: Props) => {
       }
     };
     getSelectedIncident();
+    createTasks();
   }, []);
 
-  useEffect(() => {
-    const setPrompts = () => {
-      let prompts = reportPromptList.incidentReponse[0].prompts;
-      const arr = Object.entries(prompts).map(([id, text]) => ({
-        id: parseInt(id),
-        text,
-      }));
-      if (reportPrompts != arr) setReportPrompts(arr);
-    };
-    setPrompts();
-  }, [selectedIncident]);
-
-  //Need to change this so it uses initialized tasks (OD-103) and update status of tasks once they are completed
-  const getCheckboxStatus = (checked: boolean, taskId: number): void => {
-    console.log(`checked: ${!checked}, taskId: ${taskId}`);
-    TaskList.find((task) => {
-      if (task.TaskId === taskId) {
-        task.TaskStatus = !checked ? "Completed" : "Pending";
-        if (!checked) {
-          if (completedTasks <= 4) {
-            setCompletedTasks(completedTasks + 1);
-          }
-          if (remainingTasks >= 0) {
-            setRemainingTasks(remainingTasks - 1);
-          }
+  const getCheckboxStatus = (checked: boolean, taskId: string): void => {
+    console.log(`checked: ${checked}, taskId: ${taskId}`);
+    tasks.find((task) => {
+      if (task.taskId === taskId) {
+        console.log(checked);
+        task.completed = checked ? true : false;
+        if (checked) {
+          setCompletedTasks(completedTasks + 1);
+          setRemainingTasks(remainingTasks - 1);
         } else {
-          if (completedTasks >= 0) {
-            setCompletedTasks(completedTasks - 1);
-          }
-          if (remainingTasks <= 4) {
-            setRemainingTasks(remainingTasks + 1);
-          }
+          setCompletedTasks(completedTasks - 1);
+          setRemainingTasks(remainingTasks + 1);
         }
       }
     });
+  };
+
+  const createTasks = async () => {
+    //create Task objects from reportPrompts
+    let tasks: Task[] = [];
+    if (user) var name = user.name;
+    ReportPrompts.incidentReponse[0].prompts?.forEach((prompt) => {
+      let task: Task = {
+        taskId: uuidv4(),
+        title: prompt.text,
+        assignee: name,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        reportId: uuidv4(),
+        completed: false,
+      };
+      tasks.push(task);
+    });
+    await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+    console.log(tasks);
+    setTasks(tasks);
+    setRemainingTasks(tasks.length);
   };
 
   return (
@@ -108,18 +117,16 @@ const ReportTasks = ({ route, navigation }: Props) => {
             <Icon name="arrow-back-ios" type="material"></Icon>
           </Pressable>
           <Text style={styles.header}>{reportName}</Text>
-          <Pressable onPress={() => navigation.navigate("")} disabled={true}>
-            <Icon name="arrow-forward-ios" type="material"></Icon>
-          </Pressable>
+          <SaveAndSharePDF />
         </View>
         <View style={styles.tasksContainer}>
           <FlatList
-            data={reportPrompts}
+            data={tasks}
             renderItem={({ item }) => (
-              <View key={item.id} style={styles.taskContainer}>
+              <View key={item.taskId} style={styles.taskContainer}>
                 <Checkbox
                   getCheckboxStatus={getCheckboxStatus}
-                  taskId={item.id}
+                  taskId={item.taskId}
                 />
                 <TouchableOpacity
                   onPress={() =>
@@ -137,12 +144,12 @@ const ReportTasks = ({ route, navigation }: Props) => {
                   style={styles.taskTextContainer}
                 >
                   <Text style={styles.taskText}>
-                    {item.text.substring(0, 70) + "..."}
+                    {item.title.substring(0, 70) + "..."}
                   </Text>
                 </TouchableOpacity>
               </View>
             )}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => item.taskId.toString()}
           />
         </View>
       </SafeAreaView>
@@ -183,9 +190,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
   },
   tasksContainer: {
-    // marginTop: 20,
     flex: 1,
-    // overflow: "scroll",
     padding: scale(16),
   },
   taskContainer: {
