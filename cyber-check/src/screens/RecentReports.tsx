@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Dimensions,
   Platform,
+  Modal,
 } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Icon } from "@rneui/base";
@@ -20,42 +21,57 @@ import { StatusBar } from "react-native";
 import Home from "./Home";
 import SearchBar from "../components/SearchBar";
 import TeamCollab from "./TeamCollab";
+import { Report } from "../types/Report";
+
 const Tab = createBottomTabNavigator();
 type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
-
-
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
 const RecentReportsTab = () => {
   const [searchPhrase, setSearchPhrase] = useState("");
   const [clicked, setClicked] = useState(false);
-  const [data, setData] = useState();
+  const [report, setReport] = useState<Report[]>([]);
   //const renderItem = ({ item }: { item: any }) => <Item title={item.title} />;
   const Item = ({
     item,
     onPress,
+    onLongPress,
     backgroundColor,
     textColor,
   }: {
     item: any;
     onPress: any;
+    onLongPress: any;
     backgroundColor: any;
     textColor: any;
   }) => (
-    <TouchableOpacity onPress={onPress} style={[styles.item, backgroundColor]}>
+    <TouchableOpacity
+      onPress={onPress}
+      onLongPress={onLongPress}
+      style={[styles.item, backgroundColor]}
+    >
       <Text style={[styles.title, textColor]}>{item.title}</Text>
     </TouchableOpacity>
   );
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, setSelectedId] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<Report>();
   const renderItem = ({ item }: { item: any }) => {
     const backgroundColor = item.id === selectedId ? "#DDDDDD" : "#D3D3D3";
     const color = item.id === selectedId ? "white" : "black";
     return (
       <Item
         item={item}
-        onPress={() => setSelectedId(item.id)}
+        onPress={() => {
+          console.log(item);
+          setSelectedId(item.reportId);
+        }}
+        onLongPress={() => {
+          setSelectedReport(item);
+          setShowModal(true);
+        }}
         backgroundColor={{ backgroundColor }}
         textColor={{ color }}
       />
@@ -64,10 +80,12 @@ const RecentReportsTab = () => {
 
   const getReports = async () => {
     axios
-      .get("http://192.168.4.56:3001/Reports/getReports/487ce5ba-7717-4b9a-b59d-dfd91836f431", {
-      })
+      .get(
+        "http://192.168.4.56:3001/Reports/getReports/487ce5ba-7717-4b9a-b59d-dfd91836f431",
+        {}
+      )
       .then((res) => {
-        setData(res.data);
+        setReport(res.data);
       })
       .catch((err) => {
         console.log(err);
@@ -76,30 +94,42 @@ const RecentReportsTab = () => {
 
   useEffect(() => {
     getReports();
-    console.log(data);
   }, []);
-  
-
-
 
   return (
     <View style={{ alignItems: "center" }}>
       <SearchBar
-        clicked={searchPhrase}
-        searchPhrase={setSearchPhrase}
-        setSearchPhrase={clicked}
+        clicked={clicked}
+        searchPhrase={searchPhrase}
+        setSearchPhrase={setSearchPhrase}
         setClicked={setClicked}
       ></SearchBar>
       <View style={{ justifyContent: "center", alignItems: "center" }}>
-        <FlatList 
-          data={data}
+        <FlatList
+          data={report}
           columnWrapperStyle={styles.row}
           numColumns={2}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.reportId}
           extraData={selectedId}
         />
       </View>
+      <Modal visible={showModal} animationType="slide">
+        {selectedReport && (
+          <View
+            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+          >
+            <Text style={{ fontSize: 24 }}>{selectedReport.title}</Text>
+            <Text style={{ fontSize: 24 }}>Type: {selectedReport.type}</Text>
+            <Text style={{ fontSize: 24 }}>
+              Status: {selectedReport.status}
+            </Text>
+            <TouchableOpacity onPress={() => setShowModal(false)}>
+              <Text style={{ color: "blue", marginTop: 16 }}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </Modal>
     </View>
   );
 };
@@ -168,7 +198,7 @@ const RecentReportsScreen = ({ navigation }: Props) => {
       </View>
     </>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
