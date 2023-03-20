@@ -9,3 +9,9 @@ import { v4 as uuidv4 } from 'uuid';
      [name, incidentType, id]);
     return result;
      };
+    //  export const saveChanges = (name: string, incidentType: string, comment: string, description: string ) => {
+    //   const id = uuidv4();
+    //   const result = incidentResponseDbPool.query("INSERT INTO reports (name, incidentType, id, comment, description) VALUES ($1, $2, $3) RETURNING *",
+    //    [name, incidentType, id, comment, description]);
+    //   return result;
+    //    };
