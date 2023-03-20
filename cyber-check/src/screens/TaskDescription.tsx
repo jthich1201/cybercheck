@@ -14,7 +14,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
 import { scale } from "react-native-size-matters";
 import { getUser } from "../hooks/getUser";
-
+const IP = process.env.IP;
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
@@ -36,7 +36,7 @@ const TaskDescription = ({ route, navigation }: Props) => {
     }
 
     try {
-      const response = await fetch("http://10.0.0.129:3001/api/descriptions", {
+      const response = await fetch("http://192.168.1.3:3001/api/descriptions", {
         method: "POST",
         headers: {
           Accept: "application/json",

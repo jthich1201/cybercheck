@@ -1,5 +1,6 @@
+const IP = process.env.IP;
 axios
-  .get("http://localhost:3000/login")
+  .get(`http://192.168.1.3:3001/login`)
   .then((x) => {
     if (x.status === "succesful login") {
 		localStorage.setItem("token", x.token);

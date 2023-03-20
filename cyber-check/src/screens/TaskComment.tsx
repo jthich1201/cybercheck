@@ -21,15 +21,14 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-
-
 const TaskComment = ({ navigation, route }: Props) => {
   let { reportName } = route.params;
   let { item } = route.params;
   let currentUser = getUser();
   const [inputText, setInputText] = useState("");
   const [commentText, setCommentText] = useState("");
-
+  const IP = process.env.IP;
+  
   const submitComment = async () => {
     const comment = commentText.trim();
     if (!comment) {
@@ -37,7 +36,7 @@ const TaskComment = ({ navigation, route }: Props) => {
     }
 
     try {
-      const response = await fetch("http://192.168.1.3:3000/api/comments", {
+      const response = await fetch("http://192.168.1.3:3001/api/comments", {
         method: "POST",
         headers: {
           Accept: "application/json",

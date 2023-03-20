@@ -77,11 +77,11 @@ const RecentReportsTab = () => {
       />
     );
   };
-
+  const IP = process.env.IP;
   const getReports = async () => {
     axios
       .get(
-        "http://192.168.4.56:3001/Reports/getReports/487ce5ba-7717-4b9a-b59d-dfd91836f431",
+        "http://192.168.1.3:3001/Reports/getReports/487ce5ba-7717-4b9a-b59d-dfd91836f431",
         {}
       )
       .then((res) => {

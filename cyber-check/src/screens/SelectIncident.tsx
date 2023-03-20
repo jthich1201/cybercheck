@@ -56,6 +56,7 @@ const SelectIncident = ({ navigation }: Props) => {
       setName(JSON.stringify(incident));
     }
   }, [selectedIncident, reportName]);
+  const IP = process.env.IP;
 
   const createReport = async () => {
     //
@@ -73,7 +74,7 @@ const SelectIncident = ({ navigation }: Props) => {
       updatedAt: new Date(),
     };
     axios
-      .post("http//localhost:3001/Reports/createReport", report) //need to change backend api to match body fields
+      .post("http://192.168.1.3:3001/Reports/createReport", report) //need to change backend api to match body fields
       .then((res) => {
         console.log(res);
       })

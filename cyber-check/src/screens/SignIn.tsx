@@ -135,15 +135,15 @@ const SignIn = ({ navigation }: Props) => {
   };
 
   //need to think abt how to handle refreshing token automatically and not rely on user to refresh
-
+  const IP = process.env.IP;
   const SaveUserData = async (data: any) => {
     axios
-      .post("http://10.117.226.177:3001/Users/saveUsers", data)
+      .post("http://192.168.1.3:3001/Users/saveUsers", data)
       .then((res) => {
         console.log(res);
       })
       .catch((err) => {
-        console.log(err);
+        console.log("there was an error");
       });
     await AsyncStorage.setItem("user", JSON.stringify(data));
   };

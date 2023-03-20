@@ -31,11 +31,12 @@ const Submit = ({ route, navigation }: Props) => {
 
   const now = new Date();
   const timestamp = now.toLocaleString();
+  const IP = process.env.IP;
 
   useEffect(() => {
     const interval = setInterval(() => {
         setCurrentTime(new Date());
-         axios.post('http//localhost:3001/Users/saveUsers', { date_time: timestamp}) ///////////////////////////////////////////
+         axios.post("http://192.168.1.3:3001/Users/saveUsers", { date_time: timestamp}) ///////////////////////////////////////////
          .then(response => console.log(response))
          .catch(error => console.log(error));
     }, 1000);
