@@ -2,7 +2,7 @@ export interface Report {
     reportId: string;
     title: string;
     creator: string;
-    created_at: Date;
+    createdAt: Date;
     type: string;
     status: string;
     orgId: string;

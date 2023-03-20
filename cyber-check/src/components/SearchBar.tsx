@@ -29,6 +29,7 @@ const SearchBar = ({ clicked, searchPhrase, setSearchPhrase, setClicked }) => {
           onFocus={() => {
             setClicked(true);
           }}
+          onSubmitEditing={() => setClicked(true)}
         />
         {/* cross Icon, depending on whether the search bar is clicked or not */}
         {clicked && (
