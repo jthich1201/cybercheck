@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -20,6 +20,8 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
+
+
 
 const TaskComment = ({ navigation, route }: Props) => {
   let { reportName } = route.params;
@@ -71,7 +73,7 @@ const TaskComment = ({ navigation, route }: Props) => {
           <Icon name="arrow-back-ios" type="material"></Icon>
         </Pressable>
         <Text style={styles.header}>{reportName}</Text>
-        <Pressable onPress={() => navigation.navigate("")} disabled={true}>
+        <Pressable  onPress={() => navigation.navigate("Submit", { reportName })}>
           <Icon name="arrow-forward-ios" type="material"></Icon>
         </Pressable>
       </View>
@@ -93,6 +95,12 @@ const TaskComment = ({ navigation, route }: Props) => {
         <Text style={styles.taskName}>
           Completed by: Billy {"\n"} On Feb 10, 2023
         </Text>
+        <View style={{}}>
+          <Pressable style={styles.button} onPress={submitComment}>
+            <Text style={styles.buttonText}>Add Comments</Text>
+          </Pressable>
+        </View>
+
         <TextInput
           multiline={true}
           numberOfLines={4}
@@ -101,11 +109,7 @@ const TaskComment = ({ navigation, route }: Props) => {
           placeholder="comments..."
           value={commentText}
         />
-        <View style={{}}>
-          <Pressable style={styles.button} onPress={submitComment}>
-            <Text style={styles.buttonText}>Add Comments</Text>
-          </Pressable>
-        </View>
+
       </View>
     </SafeAreaView>
   );

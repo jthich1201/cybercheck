@@ -30,6 +30,7 @@
     "expo-sharing": "~11.0.1",
     "expo-status-bar": "~1.4.2",
     "expo-web-browser": "~12.0.0",
+    "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "msal": "^1.4.17",
     "pdf-lib": "^1.17.1",
@@ -52,6 +53,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
+    "@types/node": "^18.15.3",
     "@types/react": "~18.0.24",
     "@types/react-native": "~0.70.6",
     "@types/react-native-safari-view": "^2.0.5",
