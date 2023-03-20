@@ -316,13 +316,6 @@ const SignIn = ({ navigation }: Props) => {
               } else {
                 promptAsync({ useProxy: true, showInRecents: true });
               }
-<<<<<<< HEAD
-              navigation.navigate("RecentReportsTab", {
-                screen: "Home",
-                params: { user: userInfo },
-              });
-=======
->>>>>>> 9dfabe28b747638b57a1893c37f52a20be8acdcb
             }}
           >
             <FAIcon name="google" color="#FFFFFF" size={25} />

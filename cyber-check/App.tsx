@@ -16,13 +16,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const Stack = createNativeStackNavigator();
 
 const App = () => {
-  useEffect(() => {
+ /* useEffect(() => {
     const clearAsyncStorage = async () => {
       await AsyncStorage.clear();
     };
     clearAsyncStorage();
     console.log("Executing ----------------------------------------");
-  }, []);
+  }, []);*/
 
   return (
     <>
