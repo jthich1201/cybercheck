@@ -8,10 +8,12 @@ import {
   TextInput,
   Platform,
   StatusBar,
-} from "react-native";
+} 
+from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Icon } from "@rneui/base";
+import { getUser } from "../hooks/getUser";
 
 type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
@@ -21,7 +23,8 @@ const windowHeight = Dimensions.get("window").height;
 
 const TaskComment = ({ navigation, route }: Props) => {
   let { reportName } = route.params;
-  let { task } = route.params;
+  let { item } = route.params;
+  let currentUser = getUser();
   const [inputText, setInputText] = useState("");
   const [commentText, setCommentText] = useState("");
 
@@ -39,7 +42,8 @@ const TaskComment = ({ navigation, route }: Props) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-        comment: comment 
+          comment: comment,
+          user_id: currentUser?.userId,
         }),
       });
       const result = await response.json();
@@ -50,6 +54,7 @@ const TaskComment = ({ navigation, route }: Props) => {
       console.log(error);
     }
   };
+
   return (
     <SafeAreaView
       style={[
@@ -66,21 +71,24 @@ const TaskComment = ({ navigation, route }: Props) => {
           <Icon name="arrow-back-ios" type="material"></Icon>
         </Pressable>
         <Text style={styles.header}>{reportName}</Text>
-        <Pressable style={styles.button} onPress={submitComment}>
-            <Text style={styles.buttonText}>Add Comments</Text>
-          </Pressable>
+        <Pressable onPress={() => navigation.navigate("")} disabled={true}>
+          <Icon name="arrow-forward-ios" type="material"></Icon>
+        </Pressable>
       </View>
 
       <View style={styles.contentContainer}>
         <View style={{ alignItems: "center", justifyContent: "center" }}>
-          <Text style={styles.taskName}>{task.TaskName}</Text>
+          <Text style={styles.taskName}>
+            {item.title.substring(0, 30) + "..."}
+          </Text>
         </View>
         <TextInput
           multiline={true}
           style={styles.description}
           onChangeText={(description) => setInputText(description)}
-          placeholder="Description..."
+          placeholder="Description... will be pulled from database"
           value={inputText}
+          editable={false}
         />
         <Text style={styles.taskName}>
           Completed by: Billy {"\n"} On Feb 10, 2023
@@ -94,14 +102,8 @@ const TaskComment = ({ navigation, route }: Props) => {
           value={commentText}
         />
         <View style={{}}>
-          <Pressable
-            style={styles.button}
-            onPress={() => {
-              //post request to add comments
-              console.log(commentText);
-            }}
-          >
-            <Text style={styles.buttonText}> Add Comments</Text>
+          <Pressable style={styles.button} onPress={submitComment}>
+            <Text style={styles.buttonText}>Add Comments</Text>
           </Pressable>
         </View>
       </View>

@@ -16,6 +16,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as AuthSession from "expo-auth-session";
 import axios from "axios";
 import * as Linking from "expo-linking";
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -133,15 +135,10 @@ const SignIn = ({ navigation }: Props) => {
   };
 
   //need to think abt how to handle refreshing token automatically and not rely on user to refresh
+
   const SaveUserData = async (data: any) => {
-    //   name: userInfo.name,
-    //   email: userInfo.email,
-    //   role: admin ? "admin" : "user",
-    //   platform: platform,
-    //   platformId: userInfo.id,
-    // }
     axios
-      .post("http://10.0.0.129:3001/Users/saveUsers", data)
+      .post("http://10.117.226.177:3001/Users/saveUsers", data)
       .then((res) => {
         console.log(res);
       })
@@ -150,6 +147,7 @@ const SignIn = ({ navigation }: Props) => {
       });
     await AsyncStorage.setItem("user", JSON.stringify(data));
   };
+
   const refreshToken = async () => {
     const clientId = getClientId();
     const tokenResult = await AuthSession.refreshAsync(
@@ -246,7 +244,9 @@ const SignIn = ({ navigation }: Props) => {
             .then((res) => {
               if (res.type === "success") {
                 console.log(res);
+                let id = uuidv4();
                 var userData = {
+                  userId: uuidv4(),
                   name: res.displayName,
                   email: res.mail,
                   role: admin ? "admin" : "user",
@@ -300,7 +300,9 @@ const SignIn = ({ navigation }: Props) => {
             style={styles.button}
             onPress={() => {
               if (auth) {
+                let id = uuidv4();
                 const userData = {
+                  userId: id,
                   name: userInfo.name,
                   email: userInfo.email,
                   role: admin ? "admin" : "user",
@@ -314,10 +316,13 @@ const SignIn = ({ navigation }: Props) => {
               } else {
                 promptAsync({ useProxy: true, showInRecents: true });
               }
+<<<<<<< HEAD
               navigation.navigate("RecentReportsTab", {
                 screen: "Home",
                 params: { user: userInfo },
               });
+=======
+>>>>>>> 9dfabe28b747638b57a1893c37f52a20be8acdcb
             }}
           >
             <FAIcon name="google" color="#FFFFFF" size={25} />
