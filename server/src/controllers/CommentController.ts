@@ -8,15 +8,16 @@ const GetAllComments = (req: any, res : any) => {
 }
 
 export const addCommentController = async (req: Request, res: Response) => {
-    const { comment } = req.body;
+    const { comment, user_id } = req.body;
     try {
-      const comments = await saveComment(comment);
+      const comments = await saveComment(comment, user_id);
       res.status(201).json(comments);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Error saving comment" });
     }
   }
+
 
 export {
     GetAllComments

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   SafeAreaView,
@@ -13,7 +13,8 @@ import {
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
 import { scale } from "react-native-size-matters";
-import { getUser } from "../hooks/getUser";
+import axios from "axios";
+
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -22,39 +23,26 @@ type RootStackParamList = {};
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
-const TaskDescription = ({ route, navigation }: Props) => {
+const Submit = ({ route, navigation }: Props) => {
+  const [description, setDescription] = useState("");
   let { reportName } = route.params;
   let { item } = route.params;
-  let currentUser = getUser();
-  console.log(currentUser);
-  const [descriptionText, setDescriptionText] = useState("");
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-  const submitDescription = async () => {
-    const description = descriptionText.trim();
-    if (!description) {
-      return;
-    }
+  const now = new Date();
+  const timestamp = now.toLocaleString();
 
-    try {
-      const response = await fetch("http://10.0.0.129:3001/api/descriptions", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          description: description,
-          user_id: currentUser?.userId,
-        }),
-      });
-      const result = await response.json();
+  useEffect(() => {
+    const interval = setInterval(() => {
+        setCurrentTime(new Date());
+         axios.post('http//localhost:3001/Users/saveUsers', { date_time: timestamp}) ///////////////////////////////////////////
+         .then(response => console.log(response))
+         .catch(error => console.log(error));
+    }, 1000);
+  return () => clearInterval(interval);
+}, []);
 
-      console.log(result);
-    } catch (error) {
-      // handle error
-      console.log(error);
-    }
-  };
+
 
   return (
     <SafeAreaView
@@ -77,21 +65,24 @@ const TaskDescription = ({ route, navigation }: Props) => {
         </Pressable>
       </View>
       <View style={styles.contentContainer}>
-        <View style={styles.commentContainer}>
-          <Text style={styles.commentText}>{item.text}</Text>
-        </View>
-        <TextInput
-          multiline
-          placeholder="Enter Description"
-          style={styles.input}
-          onChangeText={(input) => setDescriptionText(input)}
-          value={descriptionText}
-        />
-        <View style={{}}>
-          <Pressable style={styles.button} onPress={submitDescription}>
-            <Text style={styles.buttonText}>Add Description</Text>
+      
+      <Text style ={styles.commentText}>Final Submit of Changes</Text>
+      <View style={{}}>
+          <Pressable
+            style={styles.button}
+            onPress={() => {
+              //post request to add timestamp to report
+              console.log(timestamp);
+              navigation.navigate("RecentReportsTab", { reportName });
+
+            }}
+          >
+            <Text style={styles.buttonText}>Submit</Text>
           </Pressable>
+        <Text>Timestamp:</Text>
+        <Text>{timestamp}</Text>
         </View>
+
       </View>
     </SafeAreaView>
   );
@@ -164,4 +155,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TaskDescription;
+export default Submit;

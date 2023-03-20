@@ -15,3 +15,10 @@ export const getReports = async (req: any, res:any) => {
     console.log(reportsList)
     return res.json(reportsList)
 }
+
+// export const saveChanges = async (req: any, res : any) => {
+//     const {name, incidentType, comment, description} = req.body;
+//     const result = await reportService.saveChanges(name, incidentType, comment, description);
+//     res.send(201).json(result);
+// }
+

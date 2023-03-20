@@ -16,6 +16,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as AuthSession from "expo-auth-session";
 import axios from "axios";
 import * as Linking from "expo-linking";
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -33,7 +35,7 @@ const SignIn = ({ navigation }: Props) => {
   Linking.addEventListener("url", ({ url }) => {
     if (url.startsWith("com.onlydevs.cybercheck://Create-Admin-User")) {
       setAdmin(true);
-      SaveUserData();
+      // SaveUserData();
     }
   });
   const [request, response, promptAsync] = Google.useAuthRequest({
@@ -100,7 +102,6 @@ const SignIn = ({ navigation }: Props) => {
       if (authString != null) {
         const authFromJson = JSON.parse(authString);
         setAuth(authFromJson);
-        console.log(authFromJson);
         setRequireRefresh(
           AuthSession.TokenResponse.isTokenFresh({
             expiresIn: authFromJson.expiresIn,
@@ -134,20 +135,19 @@ const SignIn = ({ navigation }: Props) => {
   };
 
   //need to think abt how to handle refreshing token automatically and not rely on user to refresh
-  const SaveUserData = async () => {
+
+  const SaveUserData = async (data: any) => {
     axios
-      .post("http//localhost:3001/Users/saveUsers", {
-        name: userInfo.name,
-        email: userInfo.email,
-        role: admin ? "admin" : "user",
-      })
+      .post("http://10.117.226.177:3001/Users/saveUsers", data)
       .then((res) => {
         console.log(res);
       })
       .catch((err) => {
         console.log(err);
       });
+    await AsyncStorage.setItem("user", JSON.stringify(data));
   };
+
   const refreshToken = async () => {
     const clientId = getClientId();
     const tokenResult = await AuthSession.refreshAsync(
@@ -240,21 +240,29 @@ const SignIn = ({ navigation }: Props) => {
           discovery
         ).then(async (res) => {
           setToken(res.accessToken);
-          await callMsGraph(res.accessToken).then((res) => {
-            if (res.type === "success") {
-              var userData = {
-                id: res.id,
-                name: res.displayName,
-                email: res.mail,
-              };
-              setUserInfo(userData);
+          await callMsGraph(res.accessToken)
+            .then((res) => {
+              if (res.type === "success") {
+                console.log(res);
+                let id = uuidv4();
+                var userData = {
+                  userId: uuidv4(),
+                  name: res.displayName,
+                  email: res.mail,
+                  role: admin ? "admin" : "user",
+                  platform: "Azure",
+                  platformId: res.id,
+                };
+                setUserInfo(userData);
+                SaveUserData(userData);
+              }
+            })
+            .then(() => {
               navigation.navigate("RecentReportsTab", {
                 screen: "Home",
-                params: { user: userData },
               });
               setSignedIn(true);
-            }
-          });
+            });
         });
       }
     });
@@ -292,9 +300,18 @@ const SignIn = ({ navigation }: Props) => {
             style={styles.button}
             onPress={() => {
               if (auth) {
+                let id = uuidv4();
+                const userData = {
+                  userId: id,
+                  name: userInfo.name,
+                  email: userInfo.email,
+                  role: admin ? "admin" : "user",
+                  platform: "Google",
+                  platformId: userInfo.id,
+                };
+                SaveUserData(userData);
                 navigation.navigate("RecentReportsTab", {
                   screen: "Home",
-                  params: { user: userInfo },
                 });
               } else {
                 promptAsync({ useProxy: true, showInRecents: true });
