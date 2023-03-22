@@ -14,12 +14,11 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
 import { scale } from "react-native-size-matters";
 import { getUser } from "../hooks/getUser";
-const IP = process.env.IP;
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-type RootStackParamList = {};
 
+type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 const TaskDescription = ({ route, navigation }: Props) => {
@@ -44,7 +43,7 @@ const TaskDescription = ({ route, navigation }: Props) => {
         },
         body: JSON.stringify({
           description: description,
-          user_id: currentUser?.userId,
+          user_id: currentUser?.userId
         }),
       });
       const result = await response.json();

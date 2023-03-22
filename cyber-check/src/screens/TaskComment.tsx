@@ -8,8 +8,7 @@ import {
   TextInput,
   Platform,
   StatusBar,
-} 
-from "react-native";
+} from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Icon } from "@rneui/base";
@@ -24,11 +23,43 @@ const windowHeight = Dimensions.get("window").height;
 const TaskComment = ({ navigation, route }: Props) => {
   let { reportName } = route.params;
   let { item } = route.params;
-  let currentUser = getUser();
-  const [inputText, setInputText] = useState("");
   const [commentText, setCommentText] = useState("");
-  const IP = process.env.IP;
+  const [description, setDescription] = useState("");
+  const [completedDate, setCompletedDate] = useState("");
+  const [completedUser, setCompletedUser] = useState("");
   
+  const [inputText, setInputText] = useState("");
+  let currentUser = getUser();
+  //let currentTask = getTask();
+  const fetchDescription = async () => {
+    try {
+      //const response = await fetch(`http://192.168.1.3:3001/api/description?task_id=${currentTask?.taskId}`, {
+        const response = await fetch("http://192.168.1.3:3001/api/descriptions?task_id=edc85df0-c2d0-11ed-afa1-0242ac120003", {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
+      const description = await response.json();
+      setDescription(description?.description);
+      setCompletedDate(description?.date_time);
+      setCompletedUser(description?.name);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    try {
+    fetchDescription();
+    } catch (error) {
+      console.log(error);
+    }
+
+    //console.log(description);
+  }, []);
+
   const submitComment = async () => {
     const comment = commentText.trim();
     if (!comment) {
@@ -45,6 +76,8 @@ const TaskComment = ({ navigation, route }: Props) => {
         body: JSON.stringify({
           comment: comment,
           user_id: currentUser?.userId,
+          //task_id: currentTask?.taskId
+          task_id: "edc85df0-c2d0-11ed-afa1-0242ac120003"
         }),
       });
       const result = await response.json();
@@ -87,13 +120,12 @@ const TaskComment = ({ navigation, route }: Props) => {
           multiline={true}
           style={styles.description}
           onChangeText={(description) => setInputText(description)}
-          placeholder="Description... will be pulled from database"
-          value={inputText}
+          value={description}
           editable={false}
         />
         <Text style={styles.taskName}>
-          Completed by: Billy {"\n"} On Feb 10, 2023
-        </Text>
+          Completed by: {completedUser} {"\n"} On {new Date(completedDate).toLocaleDateString()}
+          </Text>
         <View style={{}}>
           <Pressable style={styles.button} onPress={submitComment}>
             <Text style={styles.buttonText}>Add Comments</Text>
