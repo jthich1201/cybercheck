@@ -14,7 +14,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
 import { scale } from "react-native-size-matters";
 import axios from "axios";
-
+import { getIpAddress } from "../hooks/getIpAddress";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -28,22 +28,24 @@ const Submit = ({ route, navigation }: Props) => {
   let { reportName } = route.params;
   let { item } = route.params;
   const [currentTime, setCurrentTime] = useState(new Date());
+  const ipAddress = getIpAddress();
 
   const now = new Date();
   const timestamp = now.toLocaleString();
-  const IP = process.env.IP;
 
   useEffect(() => {
+    const url = `http://${ipAddress}:3001/Users/saveUsers`;
     const interval = setInterval(() => {
-        setCurrentTime(new Date());
-         axios.post("http://192.168.1.3:3001/Users/saveUsers", { date_time: timestamp}) ///////////////////////////////////////////
-         .then(response => console.log(response))
-         .catch(error => console.log(error));
+      setCurrentTime(new Date());
+      axios
+        .post(url, {
+          date_time: timestamp,
+        })
+        .then((response) => console.log(response))
+        .catch((error) => console.log(error));
     }, 1000);
-  return () => clearInterval(interval);
-}, []);
-
-
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <SafeAreaView
@@ -66,24 +68,21 @@ const Submit = ({ route, navigation }: Props) => {
         </Pressable>
       </View>
       <View style={styles.contentContainer}>
-      
-      <Text style ={styles.commentText}>Final Submit of Changes</Text>
-      <View style={{}}>
+        <Text style={styles.commentText}>Final Submit of Changes</Text>
+        <View style={{}}>
           <Pressable
             style={styles.button}
             onPress={() => {
               //post request to add timestamp to report
               console.log(timestamp);
               navigation.navigate("RecentReportsTab", { reportName });
-
             }}
           >
             <Text style={styles.buttonText}>Submit</Text>
           </Pressable>
-        <Text>Timestamp:</Text>
-        <Text>{timestamp}</Text>
+          <Text>Timestamp:</Text>
+          <Text>{timestamp}</Text>
         </View>
-
       </View>
     </SafeAreaView>
   );

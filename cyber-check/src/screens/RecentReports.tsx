@@ -22,6 +22,7 @@ import Home from "./Home";
 import SearchBar from "../components/SearchBar";
 import TeamCollab from "./TeamCollab";
 import { Report } from "../types/Report";
+import { getIpAddress } from "../hooks/getIpAddress";
 
 const Tab = createBottomTabNavigator();
 type RootStackParamList = {};
@@ -33,6 +34,8 @@ const RecentReportsTab = () => {
   const [searchPhrase, setSearchPhrase] = useState("");
   const [clicked, setClicked] = useState(false);
   const [report, setReport] = useState<Report[]>([]);
+  const ipAddress = getIpAddress();
+
   //const renderItem = ({ item }: { item: any }) => <Item title={item.title} />;
   const Item = ({
     item,
@@ -77,13 +80,11 @@ const RecentReportsTab = () => {
       />
     );
   };
-  const IP = process.env.IP;
+
   const getReports = async () => {
+    const url = `http://${ipAddress}:3001/Reports/getReports/487ce5ba-7717-4b9a-b59d-dfd91836f431`;
     axios
-      .get(
-        "http://192.168.1.3:3001/Reports/getReports/487ce5ba-7717-4b9a-b59d-dfd91836f431",
-        {}
-      )
+      .get(url, {})
       .then((res) => {
         setReport(res.data);
       })
