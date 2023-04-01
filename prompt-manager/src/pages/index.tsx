@@ -32,6 +32,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  Divider,
 } from "@mui/material";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
@@ -39,6 +40,7 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { ExpandMore, Delete, Edit, Add } from "@mui/icons-material";
 import { Fragment, useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -78,7 +80,7 @@ type Prompt = {
 };
 
 export default function Home() {
-  const [prePrompt, setPrePrompt] = useState("");
+  const [prePromptQuestion, setPrePromptQuestion] = useState("");
   const [prePrompts, setPrePrompts] = useState<PrePrompt[]>([]);
   const [open, setOpen] = useState(false);
   const [openSeverityDialog, setOpenSeverityDialog] = useState(false);
@@ -93,6 +95,8 @@ export default function Home() {
   const [incidentResponses, setIncidentResponses] = useState<
     IncidentResponse[]
   >([]);
+  const [prePromptDialog, setPrePromptDialog] = useState(false);
+  const [openPrePromptEditDialog, setOpenPrePromptEditDialog] = useState(false);
 
   const url = "http://localhost:3001/Prompts";
 
@@ -102,14 +106,19 @@ export default function Home() {
   const createPrePrompt = async () => {
     try {
       const res = await axios.post(`${url}/createPrePrompt`, {
-        question: prePrompt,
+        question: prePromptQuestion,
       });
       console.log(res);
+      console.log(
+        "cratingf ==================================================================================================="
+      );
       setPrePrompts([
         ...prePrompts,
-        { id: res.data.id, question: prePrompt, options: [] },
+        { id: res.data.id, question: prePromptQuestion, options: [] },
       ]);
-      setPrePrompt("");
+      getPrePrompts();
+      setPrePromptQuestion("");
+      setPrePromptDialog(false);
     } catch (err) {
       console.log(err);
     }
@@ -121,13 +130,14 @@ export default function Home() {
 
   useEffect(() => {
     getPrePrompts();
-  }, [open]);
+  }, [open, openPrePromptEditDialog]);
 
   useEffect(() => {
-    console.log(prePrompt);
-  }, [prePrompt]);
+    console.log(prePromptQuestion);
+  }, [prePromptQuestion]);
+
   const handlePrePromptChange = (event: { target: { value: any } }) => {
-    setPrePrompt(event.target.value);
+    setPrePromptQuestion(event.target.value);
   };
 
   useEffect(() => {
@@ -143,6 +153,48 @@ export default function Home() {
     }
     setPrePrompts(prompts);
     console.log("prompts: ", prompts);
+  };
+
+  const handlePrePromptEdit = () => {
+    setOpenPrePromptEditDialog(true);
+  };
+
+  const handleDeletePrePrompt = async (id: string) => {
+    Swal.fire({
+      title: "Are you sure you want to delete?",
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: `Delete`,
+      denyButtonText: `Don't delete`,
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        await deletePrePrompt(id).then(() => {
+          Swal.fire("Deleted!", "", "success");
+        });
+      } else if (result.isDenied) {
+        Swal.fire("Changes are not saved", "", "info");
+      }
+    });
+  };
+
+  const updatePrePrompt = async (id: string) => {
+    try {
+      console.log(id);
+      const res = await axios.put(`${url}/updatePrePrompt/${id}`, {
+        question: prePromptQuestion,
+      });
+      console.log(res);
+      setPrePromptQuestion("");
+      setOpenPrePromptEditDialog(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const deletePrePrompt = async (id: string) => {
+    const res = await axios.delete(`${url}/deletePrePrompt/${id}`);
+    console.log(res);
+    setPrePrompts(prePrompts.filter((prePrompt) => prePrompt.id !== id));
   };
 
   const createPrePromptOptions = async (
@@ -213,6 +265,11 @@ export default function Home() {
     const res = await axios.get(`${url}/getPrompts/${incidentResponseId}`);
     console.log(res.data.rows);
     return res.data.rows;
+    console.log(res);
+  };
+
+  const deletePrompt = async (promptId: string) => {
+    const res = await axios.delete(`${url}/deletePrompt/${promptId}`);
     console.log(res);
   };
 
@@ -294,7 +351,7 @@ export default function Home() {
 
   const getSeverityLevels = async () => {
     const res = await axios.get(`${url}/getSeverityLevel`);
-    const levels = res.data.sort((a: SeverityLevel, b: SeverityLevel) => {
+    res.data.sort((a: SeverityLevel, b: SeverityLevel) => {
       return parseInt(a.id) - parseInt(b.id);
     });
     setSeverityLevels(res.data);
@@ -333,6 +390,11 @@ export default function Home() {
     }
   };
 
+  const handlePrePromptDialog = () => {
+    setPrePromptQuestion("");
+    setPrePromptDialog(true);
+  };
+
   return (
     <>
       <AppBar position="static">
@@ -342,25 +404,6 @@ export default function Home() {
       </AppBar>
 
       <Container className={styles.container}>
-        <Box sx={{ marginTop: "20px" }}>
-          <Typography variant="h4">Create PrePrompt</Typography>
-          <TextField
-            id="preprompt"
-            label="PrePrompt"
-            variant="outlined"
-            fullWidth
-            multiline
-            value={prePrompt}
-            onChange={handlePrePromptChange}
-            InputProps={{
-              endAdornment: (
-                <IconButton onClick={createPrePrompt}>
-                  <Add />
-                </IconButton>
-              ),
-            }}
-          />
-        </Box>
         <Box
           sx={{
             background: "#f5f5f5",
@@ -370,7 +413,44 @@ export default function Home() {
           }}
         >
           <Box sx={{ marginTop: "20px" }}>
-            <Typography variant="h4">PrePrompts</Typography>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography variant="h4">PrePrompts</Typography>
+              <IconButton aria-label="Add" onClick={handlePrePromptDialog}>
+                <Add />
+              </IconButton>
+              <Dialog
+                open={prePromptDialog}
+                onClose={() => setPrePromptDialog(false)}
+                fullWidth={true}
+              >
+                <DialogTitle>Create PrePrompt</DialogTitle>
+                <DialogContent>
+                  <Box sx={{ margin: "10px" }}>
+                    <TextField
+                      id="preprompt"
+                      label="PrePrompt"
+                      variant="outlined"
+                      fullWidth
+                      multiline
+                      value={prePromptQuestion}
+                      onChange={handlePrePromptChange}
+                    />
+                  </Box>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setPrePromptDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={() => createPrePrompt()}>Save</Button>
+                </DialogActions>
+              </Dialog>
+            </Box>
             <Typography variant="h5" sx={{ marginTop: "10px" }}>
               Severity Levels
             </Typography>
@@ -491,6 +571,49 @@ export default function Home() {
                   <ListItemText
                     primary={`${index + 1}. ${prePrompt.question}`}
                   />
+                  <IconButton
+                    aria-label="edit"
+                    onClick={() => {
+                      setPrePromptQuestion(prePrompt.question);
+                      handlePrePromptEdit();
+                    }}
+                  >
+                    <Edit />
+                  </IconButton>
+                  <IconButton
+                    aria-label="delete"
+                    onClick={() => handleDeletePrePrompt(prePrompt.id)}
+                  >
+                    <Delete />
+                  </IconButton>
+                  <Dialog
+                    open={openPrePromptEditDialog}
+                    onClose={() => setOpenPrePromptEditDialog(false)}
+                    fullWidth={true}
+                  >
+                    <DialogTitle>Edit PrePrompt</DialogTitle>
+                    <DialogContent>
+                      <Box sx={{ margin: "10px" }}>
+                        <TextField
+                          id="preprompt"
+                          label="PrePrompt"
+                          variant="outlined"
+                          fullWidth
+                          multiline
+                          value={prePromptQuestion}
+                          onChange={(e) => setPrePromptQuestion(e.target.value)}
+                        />
+                      </Box>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={() => setOpenPrePromptEditDialog(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={() => updatePrePrompt(prePrompt.id)}>
+                        Save
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
                 </AccordionSummary>
                 <AccordionDetails>
                   <Grid container spacing={1}>
@@ -612,8 +735,179 @@ export default function Home() {
             ))}
           </List>
         </Box>
-        <Box>
-          
+        <Box
+          sx={{
+            marginTop: "20px",
+            background: "#f5f5f5",
+            padding: "10px",
+            borderRadius: "5px",
+          }}
+        >
+          <Typography variant="h4">Prompts</Typography>
+          <List>
+            {incidentResponses.map(
+              (incidentResponse: IncidentResponse, index: number) => (
+                <Accordion key={incidentResponse.id}>
+                  <AccordionSummary expandIcon={<ExpandMore />}>
+                    <ListItemText
+                      primary={`${index + 1}. ${
+                        incidentResponse.incident_type
+                      }`}
+                      secondary={incidentResponse.incident_details}
+                    />
+                    <IconButton aria-label="edit">
+                      <Edit />
+                    </IconButton>
+                    <IconButton aria-label="delete">
+                      <Delete />
+                    </IconButton>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Grid container spacing={1}>
+                      {["low", "medium", "high"].map((severity) => (
+                        <Accordion key={severity} style={{ margin: "10px 0" }}>
+                          <AccordionSummary
+                            expandIcon={<ExpandMore />}
+                            style={{
+                              backgroundColor:
+                                severity === "low"
+                                  ? "#00b300"
+                                  : severity === "medium"
+                                  ? "#ff9933"
+                                  : "#ff3333",
+                            }}
+                          >
+                            <Typography>{severity}</Typography>
+                          </AccordionSummary>
+                          <AccordionDetails style={{ display: "block" }}>
+                            {incidentResponse.prompts
+                              .filter((prompt) => prompt.severity === severity)
+                              .map((prompt) => (
+                                <Box
+                                  key={prompt.id}
+                                  style={{ margin: "10px 0", display: "flex" }}
+                                >
+                                  <Box
+                                    style={{
+                                      flexGrow: 1,
+                                      paddingRight: "10px",
+                                      display: "flex",
+                                      flexDirection: "column",
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="h6"
+                                      style={{ marginBottom: "5px" }}
+                                    >
+                                      {prompt.title}
+                                    </Typography>
+                                    <Typography
+                                      variant="body1"
+                                      style={{ flexGrow: 1 }}
+                                    >
+                                      {prompt.description}
+                                    </Typography>
+                                  </Box>
+                                  <Box
+                                    style={{
+                                      display: "flex",
+                                      flexDirection: "row",
+                                    }}
+                                  >
+                                    <IconButton
+                                      aria-label="edit prompt"
+                                      // onClick={() => handleEditPrompt(prompt)}
+                                    >
+                                      <Edit />
+                                    </IconButton>
+                                    <IconButton
+                                      aria-label="delete prompt"
+                                      // onClick={() => handleDeletePrompt(prompt)}
+                                    >
+                                      <Delete />
+                                    </IconButton>
+                                  </Box>
+                                </Box>
+                              ))}
+                          </AccordionDetails>
+                        </Accordion>
+                      ))}
+                      {/* {prePrompt.options.length < 4 && (
+                        <Grid item xs={12}>
+                          <IconButton
+                            aria-label="add"
+                            onClick={() => handleClickOpen()}
+                          >
+                            <Add />
+                            <Typography variant="body1">Add Option</Typography>
+                          </IconButton>
+                        </Grid>
+                      )} */}
+                    </Grid>
+                    <Container>
+                      {/* <Dialog
+                        open={open}
+                        onClose={handleClose}
+                        fullWidth={true}
+                      >
+                        <DialogTitle>Create PrePrompt Option</DialogTitle>
+                        <DialogContent>
+                          <Box
+                            display="flex"
+                            flexDirection="column"
+                            justifyContent="center"
+                          >
+                            <Box mb={2}>
+                              <TextField
+                                autoFocus
+                                margin="dense"
+                                label="Option Text"
+                                fullWidth
+                                value={optionText}
+                                onChange={(e) => setOptionText(e.target.value)}
+                              />
+                            </Box>
+                            <Box>
+                              <FormControl fullWidth>
+                                <InputLabel id="severity-level-select-label">
+                                  Severity Level
+                                </InputLabel>
+                                <Select
+                                  labelId="severity-level-select-label"
+                                  id="severity-level-select"
+                                  value={severityLevel}
+                                  onChange={(e) =>
+                                    setSeverityLevel(e.target.value)
+                                  }
+                                >
+                                  {[...Array(11)].map((_, i) => (
+                                    <MenuItem key={i} value={i}>
+                                      {i}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </FormControl>
+                            </Box>
+                          </Box>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={handleClose}>Cancel</Button>
+                          <Button
+                            onClick={() => handleCreateOption(prePrompt.id)}
+                            disabled={!optionText}
+                          >
+                            {selectedOptionId
+                              ? "Update Option"
+                              : "Create Option"}
+                          </Button>
+                        </DialogActions>
+                      </Dialog> */}
+                    </Container>
+                  </AccordionDetails>
+                </Accordion>
+              )
+            )}
+          </List>
         </Box>
       </Container>
     </>

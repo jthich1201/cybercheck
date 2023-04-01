@@ -6,8 +6,8 @@ const router = Router();
 
 router.post('/createPrePrompt', PromptController.createPrePrompt); // SaveUsers is a function in UserController.ts
 router.get('/getPrePrompt', PromptController.getPrePrompts);
-router.put('/updatePrePrompt', PromptController.createPrePrompt);
-router.delete('/deletePrePrompt/:prePromptId', PromptController.deletePrePrompt);
+router.put('/updatePrePrompt/:id', PromptController.updatePrePrompt);
+router.delete('/deletePrePrompt/:id', PromptController.deletePrePrompt);
 router.post('/createPrePromptOptions', PromptController.createPrePromptOptions);
 router.get('/getPrePromptOptions/:prePromptId', PromptController.getPrePromptOptions);
 router.put('/updatePrePromptOptions/:optionId', PromptController.updatePrePromptOptions);

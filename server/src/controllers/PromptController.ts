@@ -15,7 +15,8 @@ export const getPrePrompts = async (req: Request, res: Response) => {
 }
 
 export const updatePrePrompt = async (req: Request, res: Response) => {
-    const { question, id } = req.body;
+    const { id } = req.params;
+    const { question } = req.body;
     const result = await PromptService.updatePrePrompt(question, id);
     res.status(200).json(result);
 }

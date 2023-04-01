@@ -22,7 +22,8 @@ export const getPrePrompts = async () => {
 
 export const updatePrePrompt = async (question: string, id: string) => {
     try {
-        const result = await incidentResponseDbPool.query('UPDATE pre_prompts SET question = $1 WHERE id = $2', [question, id]);
+        console.log(question, id);
+        const result = await incidentResponseDbPool.query('UPDATE pre_prompts SET question = $1 WHERE id = $2 RETURNING *', [question, id]);
         return result;
     } catch (error) {
         console.error(error);
