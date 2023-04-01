@@ -60,9 +60,9 @@ export const getPrePromptOptions = async (prePromptId: string) => {
     }
 }
 
-export const updatePrePromptOptions = async (optionId: string, optionText: string) => {
+export const updatePrePromptOptions = async (optionId: string, optionText: string, severity: string) => {
     try {
-        const result = await incidentResponseDbPool.query('UPDATE pre_prompt_options SET option_text = $1 WHERE id = $2', [optionText, optionId]);
+        const result = await incidentResponseDbPool.query('UPDATE pre_prompt_options SET option_text = $1, severity_level = $2 WHERE id = $3 RETURNING *', [optionText, severity, optionId]);
         return result;
     } catch (error) {
         console.error(error);
@@ -93,10 +93,30 @@ export const createIncidentResponse = async (incidentType: string, incidentDetai
 export const getIncidentResponses = async () => {
     try {
         const result = await incidentResponseDbPool.query('SELECT * FROM incident_responses');
-        return result.rows[0];
+        return result.rows;
     } catch (error) {
         console.error(error);
         throw new Error("Could not get incident responses");
+    }
+}
+
+export const updateIncidentResponse = async (incidentType: string, incidentDetails: string, id: string) => {
+    try {
+        const result = await incidentResponseDbPool.query('UPDATE incident_responses SET incident_type = $1, incident_details = $2 WHERE id = $3', [incidentType, incidentDetails, id]);
+        return result;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Could not update incident response");
+    }
+}
+
+export const deleteIncidentResponse = async (id: string) => {
+    try {
+        const result = await incidentResponseDbPool.query('DELETE FROM incident_responses WHERE id = $1', [id]);
+        return result;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Could not delete incident response");
     }
 }
 
@@ -113,17 +133,37 @@ export const createPrompt = async (severity: string, title: string, description:
 export const getPrompts = async (incidentResponseId: string) => {
     try {
         const result = await incidentResponseDbPool.query('SELECT * FROM prompts WHERE incident_response_id = $1', [incidentResponseId]);
-        return result.rows[0];
+        return result;
     } catch (error) {
         console.error(error);
         throw new Error("Could not get prompts");
     }
 }
 
-export const getSeverityLevel = async (id: string) => {
+export const updatePrompt = async (severity: string, title: string, description: string, id: string) => {
     try {
-        const result = await incidentResponseDbPool.query('SELECT * FROM severity_levels where id = $1', [id]);
-        return result.rows[0];
+        const result = await incidentResponseDbPool.query('UPDATE prompts SET severity = $1, title = $2, description = $3 WHERE id = $4', [severity, title, description, id]);
+        return result;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Could not update prompt");
+    }
+}
+
+export const deletePrompt = async (id: string) => {
+    try {
+        const result = await incidentResponseDbPool.query('DELETE FROM prompts WHERE id = $1', [id]);
+        return result;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Could not delete prompt");
+    }
+}
+
+export const getSeverityLevels = async () => {
+    try {
+        const result = await incidentResponseDbPool.query('SELECT * FROM severity_levels');
+        return result.rows;
     } catch (error) {
         console.error(error);
         throw new Error("Could not get severity levels");
@@ -132,7 +172,7 @@ export const getSeverityLevel = async (id: string) => {
 
 export const updateSeverityLevels = async (id: string, min: number, max: number) => {
     try {
-        const result = await incidentResponseDbPool.query('UPDATE severity_levels SET min = $1, max = $2 WHERE id = $3', [min, max, id]);
+        const result = await incidentResponseDbPool.query('UPDATE severity_levels SET min_score = $1, max_score = $2 WHERE id = $3', [min, max, id]);
         return result;
     } catch (error) {
         console.error(error);
