@@ -20,9 +20,29 @@ export const getPrePrompts = async () => {
     }
 }
 
-export const createPrePromptOptions = async (option: string, prePromptId: number) => {
+export const updatePrePrompt = async (question: string, id: string) => {
     try {
-        const result = await incidentResponseDbPool.query('INSERT INTO pre_prompt_options (option_text, pre_prompt_id) VALUES ($1, $2) RETURNING *', [option, prePromptId]);
+        const result = await incidentResponseDbPool.query('UPDATE pre_prompts SET question = $1 WHERE id = $2', [question, id]);
+        return result;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Could not update pre prompt");
+    }
+}
+
+export const deletePrePrompt = async (id: string) => {
+    try {
+        const result = await incidentResponseDbPool.query('DELETE FROM pre_prompts WHERE id = $1', [id]);
+        return result;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Could not delete pre prompt");
+    }
+}
+
+export const createPrePromptOptions = async (option: string, prePromptId: number, severity: string) => {
+    try {
+        const result = await incidentResponseDbPool.query('INSERT INTO pre_prompt_options (option_text, pre_prompt_id, severity_level) VALUES ($1, $2, $3) RETURNING *', [option, prePromptId, severity]);
         return result;
     } catch (error) {
         console.error(error);
@@ -37,6 +57,26 @@ export const getPrePromptOptions = async (prePromptId: string) => {
     } catch (error) {
         console.error(error);
         throw new Error("Could not get pre prompt options");
+    }
+}
+
+export const updatePrePromptOptions = async (optionId: string, optionText: string) => {
+    try {
+        const result = await incidentResponseDbPool.query('UPDATE pre_prompt_options SET option_text = $1 WHERE id = $2', [optionText, optionId]);
+        return result;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Could not update pre prompt option");
+    }
+}
+
+export const deletePrePromptOptions = async (optionId: string) => {
+    try {
+        const result = await incidentResponseDbPool.query('DELETE FROM pre_prompt_options WHERE id = $1', [optionId]);
+        return result;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Could not delete pre prompt option");
     }
 }
 
@@ -77,5 +117,25 @@ export const getPrompts = async (incidentResponseId: string) => {
     } catch (error) {
         console.error(error);
         throw new Error("Could not get prompts");
+    }
+}
+
+export const getSeverityLevel = async (id: string) => {
+    try {
+        const result = await incidentResponseDbPool.query('SELECT * FROM severity_levels where id = $1', [id]);
+        return result.rows[0];
+    } catch (error) {
+        console.error(error);
+        throw new Error("Could not get severity levels");
+    }
+}
+
+export const updateSeverityLevels = async (id: string, min: number, max: number) => {
+    try {
+        const result = await incidentResponseDbPool.query('UPDATE severity_levels SET min = $1, max = $2 WHERE id = $3', [min, max, id]);
+        return result;
+    } catch (error) {
+        console.error(error);
+        throw new Error("Could not update severity levels");
     }
 }
