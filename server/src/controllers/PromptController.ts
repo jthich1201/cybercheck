@@ -66,7 +66,7 @@ export const getIncidentResponses = async (req: Request, res: Response) => {
 export const updateIncidentResponse = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { incidentType, incidentDetails } = req.body;
-    const result = await PromptService.updateIncidentResponse(id, incidentType, incidentDetails);
+    const result = await PromptService.updateIncidentResponse(incidentType, incidentDetails, id);
     res.status(200).json(result);
 }
 
@@ -77,8 +77,8 @@ export const deleteIncidentResponse = async (req: Request, res: Response) => {
 }
 
 export const createPrompt = async (req: Request, res: Response) => {
-    const { severity, title, description, incidentResponseId } = req.body;
-    const result = await PromptService.createPrompt(severity, title, description, incidentResponseId);
+    const { severity, title, description, id } = req.body;
+    const result = await PromptService.createPrompt(severity, title, description, id);
     res.status(201).json(result);
 }
 
@@ -91,7 +91,7 @@ export const getPrompts = async (req: Request, res: Response) => {
 export const updatePrompt = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { severity, title, description } = req.body;
-    const result = await PromptService.updatePrompt(id, severity, title, description);
+    const result = await PromptService.updatePrompt(severity, title, description, id);
     res.status(200).json(result);
 }
 

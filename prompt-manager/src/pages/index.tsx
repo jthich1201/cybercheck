@@ -33,6 +33,7 @@ import {
   TableCell,
   TableBody,
   Divider,
+  styled,
 } from "@mui/material";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
@@ -41,8 +42,6 @@ import "@fontsource/roboto/700.css";
 import { ExpandMore, Delete, Edit, Add } from "@mui/icons-material";
 import { Fragment, useEffect, useState } from "react";
 import Swal from "sweetalert2";
-
-const inter = Inter({ subsets: ["latin"] });
 
 type PrePrompt = {
   id: string;
@@ -79,6 +78,24 @@ type Prompt = {
   incident_response_id: string;
 };
 
+const CustomAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
+  "& .MuiAccordionSummary-content": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingRight: theme.spacing(2),
+  },
+  "& .MuiIconButton-root": {
+    marginLeft: theme.spacing(1),
+  },
+  "& .MuiBox-root": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+}));
+
 export default function Home() {
   const [prePromptQuestion, setPrePromptQuestion] = useState("");
   const [prePrompts, setPrePrompts] = useState<PrePrompt[]>([]);
@@ -96,7 +113,18 @@ export default function Home() {
     IncidentResponse[]
   >([]);
   const [prePromptDialog, setPrePromptDialog] = useState(false);
+  const [prePromptId, setPrePromptId] = useState("");
   const [openPrePromptEditDialog, setOpenPrePromptEditDialog] = useState(false);
+  const [incidentType, setIncidentType] = useState("");
+  const [incidentDetails, setIncidentDetails] = useState("");
+  const [newIncidentDialog, setNewIncidentDialog] = useState(false);
+  const [updateIncidentDialog, setUpdateIncidentDialog] = useState(false);
+  const [promptDialog, setPromptDialog] = useState(false);
+  const [promptTitle, setPromptTitle] = useState("");
+  const [promptDescription, setPromptDescription] = useState("");
+  const [promptSeverity, setPromptSeverity] = useState("");
+  const [updatePromptDialog, setUpdatePromptDialog] = useState(false);
+  const [promptIncidentId, setPromptIncidentId] = useState("");
 
   const url = "http://localhost:3001/Prompts";
 
@@ -108,10 +136,6 @@ export default function Home() {
       const res = await axios.post(`${url}/createPrePrompt`, {
         question: prePromptQuestion,
       });
-      console.log(res);
-      console.log(
-        "cratingf ==================================================================================================="
-      );
       setPrePrompts([
         ...prePrompts,
         { id: res.data.id, question: prePromptQuestion, options: [] },
@@ -132,10 +156,6 @@ export default function Home() {
     getPrePrompts();
   }, [open, openPrePromptEditDialog]);
 
-  useEffect(() => {
-    console.log(prePromptQuestion);
-  }, [prePromptQuestion]);
-
   const handlePrePromptChange = (event: { target: { value: any } }) => {
     setPrePromptQuestion(event.target.value);
   };
@@ -149,10 +169,13 @@ export default function Home() {
     const prompts = res.data.rows;
     for (const prompt of prompts) {
       const options = await getPrePromptOptions(prompt.id);
+      options.sort(
+        (a: PrePromptOptions, b: PrePromptOptions) =>
+          parseInt(a.severity_level) - parseInt(b.severity_level)
+      );
       prompt.options = options;
     }
     setPrePrompts(prompts);
-    console.log("prompts: ", prompts);
   };
 
   const handlePrePromptEdit = () => {
@@ -161,29 +184,26 @@ export default function Home() {
 
   const handleDeletePrePrompt = async (id: string) => {
     Swal.fire({
-      title: "Are you sure you want to delete?",
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
       showDenyButton: true,
-      showCancelButton: true,
-      confirmButtonText: `Delete`,
-      denyButtonText: `Don't delete`,
+      confirmButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
     }).then(async (result) => {
       if (result.isConfirmed) {
         await deletePrePrompt(id).then(() => {
           Swal.fire("Deleted!", "", "success");
         });
-      } else if (result.isDenied) {
-        Swal.fire("Changes are not saved", "", "info");
       }
     });
   };
 
   const updatePrePrompt = async (id: string) => {
     try {
-      console.log(id);
       const res = await axios.put(`${url}/updatePrePrompt/${id}`, {
         question: prePromptQuestion,
       });
-      console.log(res);
       setPrePromptQuestion("");
       setOpenPrePromptEditDialog(false);
     } catch (err) {
@@ -193,7 +213,6 @@ export default function Home() {
 
   const deletePrePrompt = async (id: string) => {
     const res = await axios.delete(`${url}/deletePrePrompt/${id}`);
-    console.log(res);
     setPrePrompts(prePrompts.filter((prePrompt) => prePrompt.id !== id));
   };
 
@@ -207,14 +226,12 @@ export default function Home() {
       option_text: option,
       severity: severity,
     });
-    console.log(res.data.rows[0]);
     return res.data.rows[0];
   };
 
   const getPrePromptOptions = async (prePromptId: string) => {
     try {
       const res = await axios.get(`${url}/getPrePromptOptions/${prePromptId}`);
-      console.log(res.data.rows.map((row: any) => row.option_text));
       return res.data.rows;
       // return res.data.rows.map((row: any) => row.option_text);
     } catch (err) {
@@ -223,21 +240,22 @@ export default function Home() {
     }
   };
 
-  const createIncidentResponse = async (
-    incidentType: string,
-    incidentDetails: string
-  ) => {
-    const res = await axios.post(`${url}/createIncidentResponse`, {
-      incidentType: incidentType,
-      incidentDetails: incidentDetails,
-    });
-    console.log(res);
+  const createIncidentResponse = async () => {
+    try {
+      const res = await axios.post(`${url}/createIncidentResponse`, {
+        incidentType: incidentType,
+        incidentDetails: incidentDetails,
+      });
+      setNewIncidentDialog(false);
+      getIncidentResponses();
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const getIncidentResponses = async () => {
     const res = await axios.get(`${url}/getIncidentResponses`);
     const responses = res.data;
-    console.log(responses);
     for (let response of responses) {
       const prompts = await getPrompts(response.id);
       response.prompts = prompts;
@@ -246,31 +264,71 @@ export default function Home() {
     console.log(responses);
   };
 
-  const createPrompt = async (
-    severity: string,
-    title: string,
-    description: string,
-    incidentResponseId: string
-  ) => {
-    const res = await axios.post("/api/createPrompt", {
-      severity: severity,
-      title: title,
-      description: description,
-      incidentResponseId: incidentResponseId,
+  const updateIncidentResponse = async (id: string) => {
+    try {
+      const res = await axios.put(`${url}/updateIncidentResponse/${id}`, {
+        incidentType: incidentType,
+        incidentDetails: incidentDetails,
+      });
+      setIncidentType("");
+      setIncidentDetails("");
+      setUpdateIncidentDialog(false);
+      getIncidentResponses();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const deleteIncidentResponse = async (id: string) => {
+    try {
+      const res = await axios.delete(`${url}/deleteIncidentResponse/${id}`);
+      setIncidentResponses(
+        incidentResponses.filter((response) => response.id !== id)
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const createPrompt = async () => {
+    const res = await axios.post(`${url}/createPrompt`, {
+      severity: promptSeverity,
+      title: promptTitle,
+      description: promptDescription,
+      id: promptIncidentId,
     });
-    console.log(res);
+    getIncidentResponses();
+    setPromptTitle("");
+    setPromptDescription("");
+    setPromptSeverity("");
+    setPromptDialog(false);
   };
 
   const getPrompts = async (incidentResponseId: string) => {
     const res = await axios.get(`${url}/getPrompts/${incidentResponseId}`);
-    console.log(res.data.rows);
     return res.data.rows;
-    console.log(res);
+  };
+
+  const updatePrompt = async (id: string) => {
+    try {
+      const res = await axios.put(`${url}/updatePrompt/${id}`, {
+        severity: promptSeverity,
+        title: promptTitle,
+        description: promptDescription,
+      });
+      setPromptTitle("");
+      setPromptDescription("");
+      setPromptSeverity("");
+      setUpdatePromptDialog(false);
+      getIncidentResponses();
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const deletePrompt = async (promptId: string) => {
     const res = await axios.delete(`${url}/deletePrompt/${promptId}`);
-    console.log(res);
+    getIncidentResponses();
   };
 
   const handleClickOpen = (optionId?: string) => {
@@ -295,7 +353,7 @@ export default function Home() {
     setSeverityLevel("");
   };
 
-  const handleCreateOption = async (prePromptId: string) => {
+  const handleCreateOption = async () => {
     var option: PrePromptOptions;
     if (selectedOptionId) {
       option = await updatePromptOptions(selectedOptionId);
@@ -309,7 +367,13 @@ export default function Home() {
     setPrePrompts((prePrompts) =>
       prePrompts.map((prePrompt) =>
         prePrompt.id === prePromptId
-          ? { ...prePrompt, options: [...prePrompt.options, option] }
+          ? {
+              ...prePrompt,
+              options: [...prePrompt.options, option].sort(
+                (a, b) =>
+                  parseInt(a.severity_level) - parseInt(b.severity_level)
+              ),
+            }
           : prePrompt
       )
     );
@@ -336,13 +400,31 @@ export default function Home() {
     }
   };
 
+  const handleDeletePrePromptOption = (
+    prePromptId: string,
+    optionId: string
+  ) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showDenyButton: true,
+      confirmButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deletePromptOptions(prePromptId, optionId);
+        Swal.fire("Deleted!", "Your file has been deleted.", "success");
+      }
+    });
+  };
+
   const updatePromptOptions = async (optionId: string) => {
     try {
       const res = await axios.put(`${url}/updatePrePromptOptions/${optionId}`, {
         option_text: optionText,
         severity: severityLevel,
       });
-      console.log(res.data);
       return res.data.rows[0];
     } catch (err) {
       console.log(err);
@@ -361,14 +443,12 @@ export default function Home() {
     setCurrentSeverityLevel(severityLevel);
     setMinScore(severityLevel.min_score);
     setMaxScore(severityLevel.max_score);
-    console.log(severityLevel);
     setOpenSeverityDialog(true);
   };
 
   const handleSeverityUpdate = async () => {
     const updatedSeverityLevel = await updateSeverityLevel();
     // You can save the updated severity level here.
-    console.log(updatedSeverityLevel);
     setOpenSeverityDialog(false);
     setCurrentSeverityLevel(null);
   };
@@ -383,7 +463,6 @@ export default function Home() {
           max: maxScore,
         }
       );
-      console.log(res.data);
       return res.data.rows[0];
     } catch (err) {
       console.log(err);
@@ -395,9 +474,56 @@ export default function Home() {
     setPrePromptDialog(true);
   };
 
+  const handleNewIncident = () => {
+    setIncidentType("");
+    setIncidentDetails("");
+    setNewIncidentDialog(true);
+  };
+
+  const handleDeleteIncidentResponse = (id: string) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showDenyButton: true,
+      confirmButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        await deleteIncidentResponse(id).then(() => {
+          Swal.fire("Deleted!", "", "success");
+        });
+      }
+    });
+  };
+
+  const handleDeletePrompt = (id: string) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showDenyButton: true,
+      confirmButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        await deletePrompt(id).then(() => {
+          Swal.fire("Deleted!", "", "success");
+        });
+      }
+    });
+  };
   return (
     <>
-      <AppBar position="static">
+      <AppBar
+        position="static"
+        sx={{
+          background: "#b3b1b1",
+          color: "#000",
+          px: 2,
+          textAlign: "center",
+        }}
+      >
         <Typography variant="h4">
           Cyber-Check Incident Response Prompt & Task Manager
         </Typography>
@@ -412,7 +538,7 @@ export default function Home() {
             borderRadius: "5px",
           }}
         >
-          <Box sx={{ marginTop: "20px" }}>
+          <Box>
             <Box
               sx={{
                 display: "flex",
@@ -656,7 +782,10 @@ export default function Home() {
                             <IconButton
                               aria-label="delete"
                               onClick={() =>
-                                deletePromptOptions(prePrompt.id, option.id)
+                                handleDeletePrePromptOption(
+                                  prePrompt.id,
+                                  option.id
+                                )
                               }
                             >
                               <Delete />
@@ -669,7 +798,10 @@ export default function Home() {
                       <Grid item xs={12}>
                         <IconButton
                           aria-label="add"
-                          onClick={() => handleClickOpen()}
+                          onClick={() => {
+                            setPrePromptId(prePrompt.id);
+                            handleClickOpen();
+                          }}
                         >
                           <Add />
                           <Typography variant="body1">Add Option</Typography>
@@ -704,6 +836,7 @@ export default function Home() {
                               <Select
                                 labelId="severity-level-select-label"
                                 id="severity-level-select"
+                                label="Severity Level"
                                 value={severityLevel}
                                 onChange={(e) =>
                                   setSeverityLevel(e.target.value)
@@ -722,7 +855,7 @@ export default function Home() {
                       <DialogActions>
                         <Button onClick={handleClose}>Cancel</Button>
                         <Button
-                          onClick={() => handleCreateOption(prePrompt.id)}
+                          onClick={() => handleCreateOption()}
                           disabled={!optionText}
                         >
                           {selectedOptionId ? "Update Option" : "Create Option"}
@@ -743,7 +876,55 @@ export default function Home() {
             borderRadius: "5px",
           }}
         >
-          <Typography variant="h4">Prompts</Typography>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <Typography variant="h4">Incidents</Typography>
+            <IconButton aria-label="Add" onClick={handleNewIncident}>
+              <Add />
+            </IconButton>
+            <Dialog
+              open={newIncidentDialog}
+              onClose={() => setNewIncidentDialog(false)}
+              fullWidth={true}
+            >
+              <DialogTitle>Create Incident</DialogTitle>
+              <DialogContent>
+                <Box sx={{ margin: "10px" }}>
+                  <TextField
+                    id="incidentType"
+                    label="Incident Type"
+                    variant="outlined"
+                    fullWidth
+                    multiline
+                    value={incidentType}
+                    onChange={(e) => setIncidentType(e.target.value)}
+                  />
+                </Box>
+                <Box sx={{ margin: "10px" }}>
+                  <TextField
+                    id="incidentDetails"
+                    label="Incident Details"
+                    variant="outlined"
+                    fullWidth
+                    multiline
+                    value={incidentDetails}
+                    onChange={(e) => setIncidentDetails(e.target.value)}
+                  />
+                </Box>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setNewIncidentDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => createIncidentResponse()}>Save</Button>
+              </DialogActions>
+            </Dialog>
+          </Box>
           <List>
             {incidentResponses.map(
               (incidentResponse: IncidentResponse, index: number) => (
@@ -755,18 +936,77 @@ export default function Home() {
                       }`}
                       secondary={incidentResponse.incident_details}
                     />
-                    <IconButton aria-label="edit">
+                    <IconButton
+                      aria-label="edit"
+                      onClick={() => {
+                        setIncidentType(incidentResponse.incident_type);
+                        setIncidentDetails(incidentResponse.incident_details);
+                        setUpdateIncidentDialog(true);
+                      }}
+                    >
                       <Edit />
                     </IconButton>
-                    <IconButton aria-label="delete">
+                    <IconButton
+                      aria-label="delete"
+                      onClick={() =>
+                        handleDeleteIncidentResponse(incidentResponse.id)
+                      }
+                    >
                       <Delete />
                     </IconButton>
+                    <Dialog
+                      open={updateIncidentDialog}
+                      onClose={() => setUpdateIncidentDialog(false)}
+                      fullWidth={true}
+                    >
+                      <DialogTitle>Edit Incident</DialogTitle>
+                      <DialogContent>
+                        <Box sx={{ margin: "10px" }}>
+                          <TextField
+                            id="incidentType"
+                            label="Incident Type"
+                            variant="outlined"
+                            fullWidth
+                            multiline
+                            value={incidentType}
+                            onChange={(e) => setIncidentType(e.target.value)}
+                          />
+                        </Box>
+                        <Box sx={{ margin: "10px" }}>
+                          <TextField
+                            id="incidentDetails"
+                            label="Incident Details"
+                            variant="outlined"
+                            fullWidth
+                            multiline
+                            value={incidentDetails}
+                            onChange={(e) => setIncidentDetails(e.target.value)}
+                          />
+                        </Box>
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={() => setUpdateIncidentDialog(false)}>
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={() =>
+                            updateIncidentResponse(incidentResponse.id)
+                          }
+                        >
+                          Save
+                        </Button>
+                      </DialogActions>
+                    </Dialog>
                   </AccordionSummary>
                   <AccordionDetails>
                     <Grid container spacing={1}>
                       {["low", "medium", "high"].map((severity) => (
-                        <Accordion key={severity} style={{ margin: "10px 0" }}>
-                          <AccordionSummary
+                        <Accordion
+                          key={severity}
+                          style={{ margin: "10px 0", width: "100%" }}
+                        >
+                          <CustomAccordionSummary
+                            id="accordionSummary"
                             expandIcon={<ExpandMore />}
                             style={{
                               backgroundColor:
@@ -775,17 +1015,98 @@ export default function Home() {
                                   : severity === "medium"
                                   ? "#ff9933"
                                   : "#ff3333",
+                              display: "flex",
+                              flexDirection: "row",
+                              justifyContent: "space-between",
+                              alignItems: "center",
                             }}
                           >
-                            <Typography>{severity}</Typography>
-                          </AccordionSummary>
-                          <AccordionDetails style={{ display: "block" }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <Typography>{severity}</Typography>
+                              <IconButton
+                                aria-label="add"
+                                onClick={() => {
+                                  setPromptTitle("");
+                                  setPromptDescription("");
+                                  setPromptSeverity(severity);
+                                  setPromptIncidentId(incidentResponse.id);
+                                  setPromptDialog(true);
+                                }}
+                              >
+                                <Add />
+                              </IconButton>
+                              <Dialog
+                                open={promptDialog}
+                                onClose={() => setPromptDialog(false)}
+                                fullWidth={true}
+                              >
+                                <DialogTitle>Create Task</DialogTitle>
+                                <DialogContent>
+                                  <Box sx={{ margin: "10px" }}>
+                                    <TextField
+                                      id="promptTitle"
+                                      label="Task Title"
+                                      variant="outlined"
+                                      fullWidth
+                                      multiline
+                                      value={promptTitle}
+                                      onChange={(e) =>
+                                        setPromptTitle(e.target.value)
+                                      }
+                                    />
+                                  </Box>
+                                  <Box sx={{ margin: "10px" }}>
+                                    <TextField
+                                      id="promptDescription"
+                                      label="Task Description"
+                                      variant="outlined"
+                                      fullWidth
+                                      multiline
+                                      value={promptDescription}
+                                      onChange={(e) =>
+                                        setPromptDescription(e.target.value)
+                                      }
+                                    />
+                                  </Box>
+                                </DialogContent>
+                                <DialogActions>
+                                  <Button
+                                    onClick={() => setPromptDialog(false)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    onClick={() => {
+                                      createPrompt();
+                                    }}
+                                  >
+                                    Save
+                                  </Button>
+                                </DialogActions>
+                              </Dialog>
+                            </Box>
+                          </CustomAccordionSummary>
+                          <AccordionDetails
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              margin: "0",
+                            }}
+                          >
                             {incidentResponse.prompts
                               .filter((prompt) => prompt.severity === severity)
                               .map((prompt) => (
                                 <Box
                                   key={prompt.id}
-                                  style={{ margin: "10px 0", display: "flex" }}
+                                  style={{
+                                    margin: "10px 0",
+                                    display: "flex",
+                                  }}
                                 >
                                   <Box
                                     style={{
@@ -816,93 +1137,87 @@ export default function Home() {
                                   >
                                     <IconButton
                                       aria-label="edit prompt"
-                                      // onClick={() => handleEditPrompt(prompt)}
+                                      onClick={() => {
+                                        setPromptSeverity(prompt.severity);
+                                        setPromptTitle(prompt.title);
+                                        setPromptDescription(
+                                          prompt.description
+                                        );
+                                        setUpdatePromptDialog(true);
+                                      }}
                                     >
                                       <Edit />
                                     </IconButton>
                                     <IconButton
                                       aria-label="delete prompt"
-                                      // onClick={() => handleDeletePrompt(prompt)}
+                                      onClick={() =>
+                                        handleDeletePrompt(prompt.id)
+                                      }
                                     >
                                       <Delete />
                                     </IconButton>
+                                    <Dialog
+                                      open={updatePromptDialog}
+                                      onClose={() =>
+                                        setUpdatePromptDialog(false)
+                                      }
+                                      fullWidth={true}
+                                    >
+                                      <DialogTitle>Edit Task</DialogTitle>
+                                      <DialogContent>
+                                        <Box sx={{ margin: "10px" }}>
+                                          <TextField
+                                            id="promptTitle"
+                                            label="Prompt Title"
+                                            variant="outlined"
+                                            fullWidth
+                                            multiline
+                                            value={promptTitle}
+                                            onChange={(e) =>
+                                              setPromptTitle(e.target.value)
+                                            }
+                                          />
+                                        </Box>
+                                        <Box sx={{ margin: "10px" }}>
+                                          <TextField
+                                            id="promptDescription"
+                                            label="Prompt Description"
+                                            variant="outlined"
+                                            fullWidth
+                                            multiline
+                                            value={promptDescription}
+                                            onChange={(e) =>
+                                              setPromptDescription(
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                        </Box>
+                                      </DialogContent>
+                                      <DialogActions>
+                                        <Button
+                                          onClick={() =>
+                                            setUpdatePromptDialog(false)
+                                          }
+                                        >
+                                          Cancel
+                                        </Button>
+                                        <Button
+                                          onClick={() =>
+                                            updatePrompt(prompt.id)
+                                          }
+                                        >
+                                          Save
+                                        </Button>
+                                      </DialogActions>
+                                    </Dialog>
                                   </Box>
                                 </Box>
                               ))}
                           </AccordionDetails>
                         </Accordion>
                       ))}
-                      {/* {prePrompt.options.length < 4 && (
-                        <Grid item xs={12}>
-                          <IconButton
-                            aria-label="add"
-                            onClick={() => handleClickOpen()}
-                          >
-                            <Add />
-                            <Typography variant="body1">Add Option</Typography>
-                          </IconButton>
-                        </Grid>
-                      )} */}
                     </Grid>
-                    <Container>
-                      {/* <Dialog
-                        open={open}
-                        onClose={handleClose}
-                        fullWidth={true}
-                      >
-                        <DialogTitle>Create PrePrompt Option</DialogTitle>
-                        <DialogContent>
-                          <Box
-                            display="flex"
-                            flexDirection="column"
-                            justifyContent="center"
-                          >
-                            <Box mb={2}>
-                              <TextField
-                                autoFocus
-                                margin="dense"
-                                label="Option Text"
-                                fullWidth
-                                value={optionText}
-                                onChange={(e) => setOptionText(e.target.value)}
-                              />
-                            </Box>
-                            <Box>
-                              <FormControl fullWidth>
-                                <InputLabel id="severity-level-select-label">
-                                  Severity Level
-                                </InputLabel>
-                                <Select
-                                  labelId="severity-level-select-label"
-                                  id="severity-level-select"
-                                  value={severityLevel}
-                                  onChange={(e) =>
-                                    setSeverityLevel(e.target.value)
-                                  }
-                                >
-                                  {[...Array(11)].map((_, i) => (
-                                    <MenuItem key={i} value={i}>
-                                      {i}
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                            </Box>
-                          </Box>
-                        </DialogContent>
-                        <DialogActions>
-                          <Button onClick={handleClose}>Cancel</Button>
-                          <Button
-                            onClick={() => handleCreateOption(prePrompt.id)}
-                            disabled={!optionText}
-                          >
-                            {selectedOptionId
-                              ? "Update Option"
-                              : "Create Option"}
-                          </Button>
-                        </DialogActions>
-                      </Dialog> */}
-                    </Container>
                   </AccordionDetails>
                 </Accordion>
               )

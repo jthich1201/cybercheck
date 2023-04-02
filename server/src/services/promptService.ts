@@ -143,7 +143,7 @@ export const getPrompts = async (incidentResponseId: string) => {
 
 export const updatePrompt = async (severity: string, title: string, description: string, id: string) => {
     try {
-        const result = await incidentResponseDbPool.query('UPDATE prompts SET severity = $1, title = $2, description = $3 WHERE id = $4', [severity, title, description, id]);
+        const result = await incidentResponseDbPool.query('UPDATE prompts SET severity = $1, title = $2, description = $3 WHERE id = $4 RETURNING *', [severity, title, description, id]);
         return result;
     } catch (error) {
         console.error(error);

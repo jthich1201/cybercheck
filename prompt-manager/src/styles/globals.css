@@ -105,3 +105,7 @@ a {
     color-scheme: dark;
   }
 }
+
+.swal2-popup {
+  font-family: roboto, sans-serif !important;
+}
