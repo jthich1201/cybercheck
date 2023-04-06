@@ -116,9 +116,14 @@ const SignIn = ({ navigation }: Props) => {
       }
     };
     const getIpAddress = async () => {
-      const ipAddress = await Network.getIpAddressAsync();
-      setIpAddress(ipAddress);
-      await AsyncStorage.setItem("ipAddress", JSON.stringify(ipAddress));
+      const url = Linking.createURL("");
+      console.log(url);
+      const regex = /\/\/([\d.]+)/;
+      const match = regex.exec(url);
+      const ip = match ? match[1] : "";
+      console.log(ip);
+      setIpAddress(ip);
+      await AsyncStorage.setItem("ipAddress", JSON.stringify(ip));
     };
     getPersistedAuth();
     getIpAddress();
@@ -363,6 +368,16 @@ const SignIn = ({ navigation }: Props) => {
           >
             <FAIcon name="windows" color="#FFFFFF" size={25} />
             <Text style={styles.buttonText}>{"\t"}Sign in with Microsoft</Text>
+          </Pressable>
+          <Pressable
+            style={styles.button}
+            onPress={() => {
+              navigation.navigate("RecentReportsTab", {
+                screen: "Home",
+              });
+            }}
+          >
+            <Text>Skip</Text>
           </Pressable>
           {signedIn ? (
             <Button title="Logout Azure" onPress={logoutAzure} />
