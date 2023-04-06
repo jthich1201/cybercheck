@@ -23,12 +23,14 @@ const commentsRoute = require("./routes/Comments");
 const descriptionsRoute = require("./routes/Descriptions");
 const reportRoute = require("./routes/reportRoutes")
 const promptRoute = require("./routes/promptRoutes");
+const taskRoute = require("./routes/taskRoutes");
 
 app.use('/Users', userRoute);
 app.use("/api/comments", commentsRoute);
 app.use("/api/descriptions", descriptionsRoute);
 app.use('/Reports', reportRoute);
 app.use('/Prompts', promptRoute);
+app.use('/Tasks', taskRoute)
 
 
 app.listen(port, () => {
