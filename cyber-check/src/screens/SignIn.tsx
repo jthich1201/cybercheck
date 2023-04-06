@@ -17,7 +17,9 @@ import * as AuthSession from "expo-auth-session";
 import axios from "axios";
 import * as Linking from "expo-linking";
 import "react-native-get-random-values";
+import { User } from "../types/User";
 import { v4 as uuidv4 } from "uuid";
+import * as Network from "expo-network";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -32,12 +34,15 @@ const SignIn = ({ navigation }: Props) => {
   const [requireRefresh, setRequireRefresh] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [admin, setAdmin] = useState(false);
+  const [ipAddress, setIpAddress] = useState("");
+
   Linking.addEventListener("url", ({ url }) => {
     if (url.startsWith("com.onlydevs.cybercheck://Create-Admin-User")) {
       setAdmin(true);
       // SaveUserData();
     }
   });
+
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId:
       "743023624865-l54654s9nq7ln65fn3svku1u80195ln1.apps.googleusercontent.com",
@@ -110,20 +115,33 @@ const SignIn = ({ navigation }: Props) => {
         );
       }
     };
+    const getIpAddress = async () => {
+      const ipAddress = await Network.getIpAddressAsync();
+      setIpAddress(ipAddress);
+      await AsyncStorage.setItem("ipAddress", JSON.stringify(ipAddress));
+    };
     getPersistedAuth();
+    getIpAddress();
   }, []);
 
   const getUserData = async (token: string) => {
-    let userInfoResponse = await fetch(
-      "https://www.googleapis.com/userinfo/v2/me",
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    let googleResponse = null;
+    await fetch("https://www.googleapis.com/userinfo/v2/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        googleResponse = res;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 
-    userInfoResponse.json().then((data) => {
-      setUserInfo(data);
-    });
+    const finalResponse = {
+      ...googleResponse,
+      type: "success",
+    };
+    return finalResponse;
   };
 
   const getClientId = () => {
@@ -135,17 +153,29 @@ const SignIn = ({ navigation }: Props) => {
   };
 
   //need to think abt how to handle refreshing token automatically and not rely on user to refresh
-
   const SaveUserData = async (data: any) => {
-    axios
-      .post("http://10.117.226.177:3001/Users/saveUsers", data)
-      .then((res) => {
+    var user: User = data;
+    const url = `http://${ipAddress}:3001/Users/saveUsers`;
+    try {
+      const res = await axios.post(url, data);
+      if (res.status === 201) {
+        console.log("no user", res);
+        const userId = res.data.rows[0].user_id;
+        user.userId = userId;
         console.log(res);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    await AsyncStorage.setItem("user", JSON.stringify(data));
+        await AsyncStorage.setItem("user", JSON.stringify(user));
+        return;
+      } else if (res.status === 200) {
+        console.log("user already exists", res);
+        const userId = res.data.user_id;
+        user.userId = userId;
+        await AsyncStorage.setItem("user", JSON.stringify(user));
+        return;
+      }
+    } catch (err) {
+      console.log("there was an error");
+      throw err; // or return an error object if you prefer
+    }
   };
 
   const refreshToken = async () => {
@@ -208,18 +238,6 @@ const SignIn = ({ navigation }: Props) => {
   };
 
   const signInAzure = async () => {
-    // if (signedIn) {
-    //   if (userInfo) {
-    //     navigation.navigate("RecentReportsTab", {
-    //       screen: "Home",
-    //       params: { user: userInfo },
-    //     });
-    //   } else if (token) {
-    //     callMsGraph(token);
-    //   } else {
-    //     console.log("no user info or token");
-    //   }
-    // } else {
     if (!config) return;
     let clientId = config.clientId;
     let redirectUri = config.redirectUri;
@@ -244,9 +262,7 @@ const SignIn = ({ navigation }: Props) => {
             .then((res) => {
               if (res.type === "success") {
                 console.log(res);
-                let id = uuidv4();
                 var userData = {
-                  userId: uuidv4(),
                   name: res.displayName,
                   email: res.mail,
                   role: admin ? "admin" : "user",
@@ -267,6 +283,38 @@ const SignIn = ({ navigation }: Props) => {
       }
     });
     // }
+  };
+
+  const signInGoogle = async () => {
+    promptAsync({ useProxy: true, showInRecents: true }).then((res) => {
+      if (res.type === "success") {
+        const { authentication } = res;
+        if (authentication) {
+          setAuth(authentication);
+          const persistAuth = async () => {
+            await AsyncStorage.setItem("auth", JSON.stringify(authentication));
+          };
+          persistAuth();
+          getUserData(authentication.accessToken).then((res) => {
+            if (res.type === "success") {
+              var userData = {
+                name: res.name,
+                email: res.email,
+                role: admin ? "admin" : "user",
+                platform: "Google",
+                platformId: res.id,
+              };
+              SaveUserData(userData).then(() => {
+                navigation.navigate("RecentReportsTab", {
+                  screen: "Home",
+                });
+                setSignedIn(true);
+              });
+            }
+          });
+        }
+      }
+    });
   };
 
   const logoutAzure = async () => {
@@ -299,23 +347,7 @@ const SignIn = ({ navigation }: Props) => {
           <Pressable
             style={styles.button}
             onPress={() => {
-              if (auth) {
-                let id = uuidv4();
-                const userData = {
-                  userId: id,
-                  name: userInfo.name,
-                  email: userInfo.email,
-                  role: admin ? "admin" : "user",
-                  platform: "Google",
-                  platformId: userInfo.id,
-                };
-                SaveUserData(userData);
-                navigation.navigate("RecentReportsTab", {
-                  screen: "Home",
-                });
-              } else {
-                promptAsync({ useProxy: true, showInRecents: true });
-              }
+              signInGoogle();
             }}
           >
             <FAIcon name="google" color="#FFFFFF" size={25} />

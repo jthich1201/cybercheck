@@ -20,6 +20,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Report } from "../types/Report";
 import { getUser } from "../hooks/getUser";
 import { v4 as uuidv4 } from "uuid";
+import { getIpAddress } from "../hooks/getIpAddress";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -31,7 +32,7 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 const SelectIncident = ({ navigation }: Props) => {
   const [selectedIncident, setSelectedIncident] = useState(-1);
   const [reportName, setReportName] = useState("");
-
+  const ipAddress = getIpAddress();
   const getSelectedIncident = (selectedIncident: number) => {
     return selectedIncident != -1
       ? IncidentOptions[selectedIncident].label
@@ -56,16 +57,17 @@ const SelectIncident = ({ navigation }: Props) => {
       setName(JSON.stringify(incident));
     }
   }, [selectedIncident, reportName]);
+  const IP = process.env.IP;
 
   const createReport = async () => {
-    //
+    const url = `http://${ipAddress}:3001/Reports/createReport`;
     var name = "Anonymous";
     if (user) name = user.name;
     const report: Report = {
       reportId: uuidv4(),
       title: reportName,
       creator: name,
-      created_at: new Date(),
+      createdAt: new Date(),
       type: getSelectedIncident(selectedIncident),
       status: "Draft",
       orgId: "1234",
@@ -73,7 +75,7 @@ const SelectIncident = ({ navigation }: Props) => {
       updatedAt: new Date(),
     };
     axios
-      .post("http//localhost:3001/Reports/createReport", report) //need to change backend api to match body fields
+      .post(url, report) //need to change backend api to match body fields
       .then((res) => {
         console.log(res);
       })
