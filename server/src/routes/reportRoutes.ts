@@ -4,8 +4,8 @@ const router = Router();
 
 
 
-router.post( '/createReport', ReportController.createReport); // SaveUsers is a function in UserController.ts
-router.get('/g etReports/:userId', ReportController.getReports);
+router.post('/createReport', ReportController.createReport); // SaveUsers is a function in UserController.ts
+router.get('/getReports/:userId', ReportController.getReports);
 
 
 // router.post( '/saveChanges', ReportController.saveChanges); // SaveUsers is a function in UserController.ts
