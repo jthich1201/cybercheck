@@ -15,7 +15,8 @@ export const getPrePrompts = async (req: Request, res: Response) => {
 }
 
 export const updatePrePrompt = async (req: Request, res: Response) => {
-    const { question, id } = req.body;
+    const { id } = req.params;
+    const { question } = req.body;
     const result = await PromptService.updatePrePrompt(question, id);
     res.status(200).json(result);
 }
@@ -39,8 +40,9 @@ export const getPrePromptOptions = async (req: Request, res: Response) => {
 }
 
 export const updatePrePromptOptions = async (req: Request, res: Response) => {
-    const { optionId, optionText } = req.body;
-    const result = await PromptService.updatePrePromptOptions(optionId, optionText);
+    const { optionId } = req.params;
+    const { option_text, severity } = req.body;
+    const result = await PromptService.updatePrePromptOptions(optionId, option_text, severity);
     res.status(200).json(result);
 }
 
@@ -56,14 +58,27 @@ export const createIncidentResponse = async (req: Request, res: Response) => {
     res.status(201).json(result);
 }
 
-export const getIncidentResponse = async (req: Request, res: Response) => {
+export const getIncidentResponses = async (req: Request, res: Response) => {
     const result = await PromptService.getIncidentResponses();
     res.status(200).json(result);
 }
 
+export const updateIncidentResponse = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { incidentType, incidentDetails } = req.body;
+    const result = await PromptService.updateIncidentResponse(incidentType, incidentDetails, id);
+    res.status(200).json(result);
+}
+
+export const deleteIncidentResponse = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await PromptService.deleteIncidentResponse(id);
+    res.status(200).json(result);
+}
+
 export const createPrompt = async (req: Request, res: Response) => {
-    const { severity, title, description, incidentResponseId } = req.body;
-    const result = await PromptService.createPrompt(severity, title, description, incidentResponseId);
+    const { severity, title, description, id } = req.body;
+    const result = await PromptService.createPrompt(severity, title, description, id);
     res.status(201).json(result);
 }
 
@@ -73,14 +88,27 @@ export const getPrompts = async (req: Request, res: Response) => {
     res.status(200).json(result);
 }
 
-export const getSeverityLevel = async (req: Request, res: Response) => {
+export const updatePrompt = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await PromptService.getSeverityLevel(id);
+    const { severity, title, description } = req.body;
+    const result = await PromptService.updatePrompt(severity, title, description, id);
+    res.status(200).json(result);
+}
+
+export const deletePrompt = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const result = await PromptService.deletePrompt(id);
+    res.status(200).json(result);
+}
+
+export const getSeverityLevels = async (req: Request, res: Response) => {
+    const result = await PromptService.getSeverityLevels();
     res.status(200).json(result);
 }
 
 export const updateSeverityLevel = async (req: Request, res: Response) => {
-    const { id, min, max } = req.body;
+    const { id } = req.params;
+    const { min, max } = req.body;
     const result = await PromptService.updateSeverityLevels(id, min, max);
     res.status(200).json(result);
 }
