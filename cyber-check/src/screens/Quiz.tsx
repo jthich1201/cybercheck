@@ -1,6 +1,7 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/base";
 import React, { useEffect, useState } from "react";
+import axios from 'axios';
 import {
   Dimensions,
   Platform,
@@ -13,28 +14,26 @@ import {
   View,
 } from "react-native";
 import { QuestionsData } from "../constants/QuestionsData";
+import { getIpAddress } from "../hooks/getIpAddress";
 
 const { height, width } = Dimensions.get("window");
 
-type RootStackParamList = {};
-type Props = NativeStackScreenProps<RootStackParamList>;
+type PrePrompt = {
+  id: string;
+  question: string;
+  options: PrePromptOptions[];
+};
 
-const Option = (props: {
-  keyvalue: any;
-  handle: (arg0: any, arg1: any, arg2: any) => void;
-  option: any;
-  questionId: any;
-  optionIndex: any;
-  text:
-    | string
-    | number
-    | boolean
-    | React.ReactElement<any, string | React.JSXElementConstructor<any>>
-    | React.ReactFragment
-    | React.ReactPortal
-    | null
-    | undefined;
-}) => {
+type PrePromptOptions = {
+  id: string;
+  option_text: string;
+  pre_prompt_id: string;
+  severity_level: string;
+};
+
+const Option = (
+  { option }: { option: PrePromptOptions } 
+) => {
   const [isSelected, setSelected] = useState(false);
 
   //   useEffect(() => {});
@@ -43,16 +42,10 @@ const Option = (props: {
     <TouchableOpacity
       onPress={() => {
         setSelected(!isSelected);
-        props.handle(
-          props.option,
-          props.questionId,
-          props.optionIndex,
-          !isSelected
-        );
       }}
       style={isSelected ? styles.optionButtonSelected : styles.optionButton}
     >
-      <Text style={styles.optionText}>{props.text}</Text>
+      <Text style={styles.optionText}>{option.option_text}</Text>
     </TouchableOpacity>
   );
 };
@@ -66,8 +59,38 @@ const Quiz = ({ route, navigation }: Props) => {
   const [nextQuestionId, setNextQuestionId] = useState(0);
   const [chosenOptions, setChosenOptions] = useState([]);
   const [isNextButtonVisible, setNextButtonVisibility] = useState(false);
+  const [prePrompts, setPrePrompts] = useState<PrePrompt[]>([]);
+  const ipAddress = getIpAddress();
+  
+  useEffect( () => {
+    // Fetch pre-prompts data from API
+    getPrePrompts();
+  }, []);
+  
+  const getPrePrompts = async() => {
+    const result = await axios.get(`http://${ipAddress}:3001/Prompts/getPrePrompt`);
+    const prompts = result.data.rows;
+    for (const prompt of prompts) {
+      const options = await getPrePromptOptions(prompt.id);
+      options.sort(
+        (a: PrePromptOptions, b: PrePromptOptions) =>
+          parseInt(a.severity_level) - parseInt(b.severity_level)
+      );
+      prompt.options = options;
+    } 
+    setPrePrompts(prompts);
+    console.log(prompts);
+  }
 
-  useEffect(() => {});
+  const getPrePromptOptions = async(id : string) => {
+    try {
+      const result = await axios.get(`http://${ipAddress}:3001/Prompts/getPrePromptOptions/${id}`)
+      return result.data.rows;
+    } catch (error) {
+      console.log("preprompt options not working", error);
+      return [];
+    }
+  }
 
   const handleNextPress = () => {
     if (isComplete) {
@@ -123,86 +146,75 @@ const Quiz = ({ route, navigation }: Props) => {
       setNextButtonVisibility(false);
     }
   };
-
-  return (
-    <SafeAreaView
-      style={[
-        styles.container,
-        {
-          marginTop: Platform.OS == "android" ? StatusBar.currentHeight : 0,
-        },
-      ]}
-    >
-      <View style={styles.headerContainer}>
-        <Pressable
-          onPress={() => navigation.navigate("TeamCollab", { reportName })}
-        >
-          <Icon name="arrow-back-ios" type="material"></Icon>
-        </Pressable>
-        <Text style={styles.header}>{reportName}</Text>
-        <Pressable
-          onPress={() => navigation.navigate("ReportTasks", { reportName })}
-          disabled={!isComplete ? true : false}
-        >
-          <Icon
-            name="arrow-forward-ios"
-            type="material"
-            color={isComplete ? "black" : "white"}
-          ></Icon>
-        </Pressable>
-      </View>
-      <View style={styles.contentContainer}>
+  
+return (
+  <SafeAreaView
+    style={[
+      styles.container,
+      {
+        marginTop: Platform.OS == "android" ? StatusBar.currentHeight : 0,
+      },
+    ]}
+  >
+    <View style={styles.headerContainer}>
+      <Pressable
+        onPress={() => navigation.navigate("TeamCollab", { reportName })}
+      >
+        <Icon name="arrow-back-ios" type="material"></Icon>
+      </Pressable>
+      <Text style={styles.header}>{reportName}</Text>
+      <Pressable
+        onPress={() => navigation.navigate("ReportTasks", { reportName })}
+        disabled={!isComplete ? true : false}
+      >
+        <Icon
+          name="arrow-forward-ios"
+          type="material"
+          color={isComplete ? "black" : "white"}
+        ></Icon>
+      </Pressable>
+    </View>
+    <View style={styles.contentContainer}>
         <View style={styles.questionContainer}>
           <Text style={styles.questionText}>
-            Q. {QuestionsData[index]["question"]}
+            Q. {prePrompts[index]["question"]}
           </Text>
         </View>
         <View style={styles.optionsContainer}>
-          {QuestionsData[index]["options"].map((option) => (
-            <Option
-              key={
-                index.toString() +
-                ", " +
-                QuestionsData[index]["options"].indexOf(option).toString()
-              }
-              questionId={index}
-              optionIndex={QuestionsData[index]["options"].indexOf(option)}
-              text={option.option_text}
-              option={option}
-              handle={handleOptionPress}
-            />
+          {prePrompts[index]["options"].map((option) => (
+            <Option option={option} />
           ))}
         </View>
-        <View
-          style={[
-            styles.bottom,
-            {
-              justifyContent: index == 0 ? "flex-end" : "space-between",
-            },
-          ]}
-        >
-          {index != 0 && (
-            <TouchableOpacity
-              style={styles.navigateButton}
-              onPress={handlePrevPress}
-            >
-              <Text style={styles.navigateText}>Previous</Text>
-            </TouchableOpacity>
-          )}
-          {isNextButtonVisible && (
-            <TouchableOpacity
-              style={[styles.navigateButton]}
-              onPress={handleNextPress}
-            >
-              <Text style={styles.navigateText}>
-                {isComplete ? "Submit" : "Next"}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+      <View
+        style={[
+          styles.bottom,
+          {
+            justifyContent: index == 0 ? "flex-end" : "space-between",
+          },
+        ]}
+      >
+        {index != 0 && (
+          <TouchableOpacity
+            style={styles.navigateButton}
+            onPress={handlePrevPress}
+          >
+            <Text style={styles.navigateText}>Previous</Text>
+          </TouchableOpacity>
+        )}
+        {isNextButtonVisible && (
+          <TouchableOpacity
+            style={[styles.navigateButton]}
+            onPress={handleNextPress}
+          >
+            <Text style={styles.navigateText}>
+              {isComplete ? "Submit" : "Next"}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
-    </SafeAreaView>
-  );
+    </View>
+  </SafeAreaView>
+);
 };
 
 const styles = StyleSheet.create({
