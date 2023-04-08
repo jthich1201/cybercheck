@@ -23,6 +23,8 @@ import { Task } from "../types/Tasks";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 import { getUser } from "../hooks/getUser";
+import { getIpAddress } from "../hooks/getIpAddress";
+import axios from "axios";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -43,6 +45,7 @@ const ReportTasks = ({ route, navigation }: Props) => {
   const [selectedIncident, setSelectedIncident] = useState("");
   const [reportPrompts, setReportPrompts] = useState<Prompt[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [taskss, setTaskss] = useState<>([]);
   const user = getUser();
 
   useEffect(() => {
@@ -99,6 +102,16 @@ const ReportTasks = ({ route, navigation }: Props) => {
     setTasks(tasks);
     setRemainingTasks(tasks.length);
   };
+
+const getTasks = async () => {
+    const ipAddress = getIpAddress();
+    const incidentid = await AsyncStorage.getItem("IncidentId")  
+    const url = `http://${ipAddress}:3001/getPrompts/${incidentid}`;
+    const response = await axios.get(url);
+    console.log(response);
+    setTaskss(response.data);
+  };  
+    
 
   return (
     <>

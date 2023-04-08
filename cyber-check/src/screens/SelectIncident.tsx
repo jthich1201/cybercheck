@@ -21,6 +21,7 @@ import { Report } from "../types/Report";
 import { getUser } from "../hooks/getUser";
 import { v4 as uuidv4 } from "uuid";
 import { getIpAddress } from "../hooks/getIpAddress";
+//import { IncidentResponse } from "../types/IncidentResponse";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -84,7 +85,37 @@ const SelectIncident = ({ navigation }: Props) => {
       });
     await AsyncStorage.setItem("report", JSON.stringify(report));
   };
+  const getIncidentResponses = async () => {
+    const url = `http://${ipAddress}:3001/IncidentResponses/getIncidentResponses`;
+    try {
+      const response = await axios.get(url);
+      const incidentResponses = response.data;
+      console.log(incidentResponses);
+      const match = incidentResponses.filter((incidentResponse: { type: any; }) =>{ 
+        incidentResponse.incident_type = getSelectedIncident(selectedIncident);
+      }  
+      );
+      await AsyncStorage.setItem("incidentResponseID", JSON.stringify(match.id)); // store incident responses in async storage
+      console.log(match);
+      await AsyncStorage.setItem("incidentResponses", JSON.stringify(match)); // store incident responses in async storage
 
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const Filter = async (filterValue) => {
+    const url = `http://${ipAddress}:3001/Reports/getReports?title=${filterValue}`; // include filter parameter in URL query string
+    axios
+      .get(url)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+  };
   return (
     <SafeAreaView
       style={[
