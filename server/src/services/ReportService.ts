@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
   };
 
   export const getReports = async(userId: any ) => {
-    const result = await(incidentResponseDbPool.query("Select report_id, title from reports where report_id in (Select report_id from report_members where user_id = $1)",
+    const result = await(incidentResponseDbPool.query("Select * from reports where report_id in (Select report_id from report_members where user_id = $1)",
       [userId]));
     return result.rows;
   };

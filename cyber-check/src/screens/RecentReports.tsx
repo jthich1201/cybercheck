@@ -23,6 +23,8 @@ import SearchBar from "../components/SearchBar";
 import TeamCollab from "./TeamCollab";
 import { Report } from "../types/Report";
 import { getIpAddress } from "../hooks/getIpAddress";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getReport } from "../hooks/getReport";
 
 const Tab = createBottomTabNavigator();
 type RootStackParamList = {};
@@ -30,10 +32,10 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-const RecentReportsTab = () => {
+const RecentReportsTab = ({ navigation }: Props) => {
   const [searchPhrase, setSearchPhrase] = useState("");
   const [clicked, setClicked] = useState(false);
-  const [report, setReport] = useState<Report[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const ipAddress = getIpAddress();
 
   //const renderItem = ({ item }: { item: any }) => <Item title={item.title} />;
@@ -67,9 +69,16 @@ const RecentReportsTab = () => {
     return (
       <Item
         item={item}
-        onPress={() => {
+        onPress={async() => {
           console.log(item);
           setSelectedId(item.reportId);
+          setSelectedReport(item);
+          console.log(item.report_id);
+          if (item.report_id) {
+            await AsyncStorage.setItem("reportId", JSON.stringify(item.report_id));
+          }
+          let reportTitle = item.title;
+          navigation.navigate("ReportTasks", {reportTitle})
         }}
         onLongPress={() => {
           setSelectedReport(item);
@@ -86,7 +95,7 @@ const RecentReportsTab = () => {
     axios
       .get(url, {})
       .then((res) => {
-        setReport(res.data);
+        setReports(res.data);
       })
       .catch((err) => {
         console.log(err);
@@ -107,7 +116,7 @@ const RecentReportsTab = () => {
       ></SearchBar>
       <View style={{ justifyContent: "center", alignItems: "center" }}>
         <FlatList
-          data={report}
+          data={reports}
           columnWrapperStyle={styles.row}
           numColumns={2}
           renderItem={renderItem}

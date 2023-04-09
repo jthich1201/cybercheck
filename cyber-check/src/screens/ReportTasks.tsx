@@ -23,6 +23,7 @@ import { Task } from "../types/Tasks";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 import { getUser } from "../hooks/getUser";
+import { getReport } from "../hooks/getReport";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -112,7 +113,7 @@ const ReportTasks = ({ route, navigation }: Props) => {
       >
         <View style={styles.headerContainer}>
           <Pressable
-            onPress={() => navigation.navigate("Quiz", { reportName })}
+            onPress={() => navigation.navigate("RecentReportsTab", { reportName })}
           >
             <Icon name="arrow-back-ios" type="material"></Icon>
           </Pressable>
