@@ -1,8 +1,10 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/base";
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Dimensions,
+  Modal,
   Platform,
   Pressable,
   SafeAreaView,
@@ -13,36 +15,29 @@ import {
   View,
 } from "react-native";
 import { QuestionsData } from "../constants/QuestionsData";
-
+import { getIpAddress } from "../hooks/getIpAddress";
+import { PrePrompt, PrePromptOptions, SeverityLevel } from "../types/Prompts";
+import { scale } from "react-native-size-matters";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const { height, width } = Dimensions.get("window");
 
-type RootStackParamList = {};
-type Props = NativeStackScreenProps<RootStackParamList>;
-
 const Option = (props: {
-  keyvalue: any;
-  handle: (arg0: any, arg1: any, arg2: any) => void;
-  option: any;
+  handle: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
+  option: PrePromptOptions;
   questionId: any;
   optionIndex: any;
-  text:
-    | string
-    | number
-    | boolean
-    | React.ReactElement<any, string | React.JSXElementConstructor<any>>
-    | React.ReactFragment
-    | React.ReactPortal
-    | null
-    | undefined;
 }) => {
-  const [isSelected, setSelected] = useState(false);
+  const [isSelected, setIsSelected] = useState(false);
 
-  //   useEffect(() => {});
+  useEffect(() => {
+    setIsSelected(false);
+    console.log("index" + props.questionId);
+  }, [props.option]);
 
   return (
     <TouchableOpacity
       onPress={() => {
-        setSelected(!isSelected);
+        setIsSelected(!isSelected);
         props.handle(
           props.option,
           props.questionId,
@@ -52,7 +47,7 @@ const Option = (props: {
       }}
       style={isSelected ? styles.optionButtonSelected : styles.optionButton}
     >
-      <Text style={styles.optionText}>{props.text}</Text>
+      <Text style={styles.optionText}>{props.option.option_text}</Text>
     </TouchableOpacity>
   );
 };
@@ -60,22 +55,81 @@ const Option = (props: {
 const Quiz = ({ route, navigation }: Props) => {
   let { reportName } = route.params;
   reportName = reportName.length > 0 ? reportName : "New Report";
-
   const [index, setIndex] = useState(0);
   const [isComplete, setComplete] = useState(false);
   const [nextQuestionId, setNextQuestionId] = useState(0);
-  const [chosenOptions, setChosenOptions] = useState([]);
   const [isNextButtonVisible, setNextButtonVisibility] = useState(false);
+  const [prePrompts, setPrePrompts] = useState<PrePrompt[]>([]);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<PrePromptOptions>();
+  const [severityLevels, setSeverityLevels] = useState<SeverityLevel[]>([]);
+  const [severityScore, setSeverityScore] = useState(0);
+  const [selectedOptionSeverity, setSelectedOptionSeverity] = useState(0);
+  const [severityLevel, setSeverityLevel] = useState<SeverityLevel>();
+  const [showModal, setShowModal] = useState(false);
+  const ipAddress = getIpAddress();
 
-  useEffect(() => {});
+  useEffect(() => {
+    getPrePrompts();
+    getSeverityLevels();
+  }, []);
+
+  const getSeverityLevels = async () => {
+    const res = await axios.get(
+      `http://${ipAddress}:3001/Prompts/getSeverityLevel`
+    );
+    const data = res.data;
+    data.sort((a: SeverityLevel, b: SeverityLevel) => {
+      return parseInt(a.id) - parseInt(b.id);
+    });
+    console.log(data);
+    setSeverityLevels(data);
+  };
+
+  const getPrePrompts = async () => {
+    const result = await axios.get(
+      `http://${ipAddress}:3001/Prompts/getPrePrompt`
+    );
+    const prompts = result.data.rows;
+    for (const prompt of prompts) {
+      const options = await getPrePromptOptions(prompt.id);
+      options.sort(
+        (a: PrePromptOptions, b: PrePromptOptions) =>
+          parseInt(a.severity_level) - parseInt(b.severity_level)
+      );
+      prompt.options = options;
+    }
+    setPrePrompts(prompts);
+    console.log(prompts.length);
+  };
+
+  const getPrePromptOptions = async (id: string) => {
+    try {
+      const result = await axios.get(
+        `http://${ipAddress}:3001/Prompts/getPrePromptOptions/${id}`
+      );
+      return result.data.rows;
+    } catch (error) {
+      console.log("preprompt options not working", error);
+      return [];
+    }
+  };
 
   const handleNextPress = () => {
     if (isComplete) {
-      navigation.navigate("ReportTasks", { reportName });
+      calcSeverityScore();
+      setShowModal(true);
     }
     if (nextQuestionId != -1) {
       setNextButtonVisibility(false);
-      setIndex(nextQuestionId);
+      let qId = nextQuestionId + 1;
+      setNextQuestionId(qId);
+      setIndex(index + 1);
+      setSelectedOptionIndex(-1);
+      console.log("Selected Option Severity: ", selectedOptionSeverity);
+      console.log("Severity Score: ", severityScore);
+      console.log(severityScore + selectedOptionSeverity);
+      setSeverityScore(severityScore + selectedOptionSeverity);
     }
   };
   const handlePrevPress = () => {
@@ -85,43 +139,46 @@ const Quiz = ({ route, navigation }: Props) => {
     console.log(`Next question id: ${nextQuestionId} && index: ${index}`);
   };
   const handleOptionPress = (
-    option: { [x: string]: string },
+    option: PrePromptOptions,
     questionId: any,
     optionIndex: any,
-    selecting: any
+    selected: any
   ) => {
-    console.log(selecting);
-
-    setNextQuestionId(parseInt(option["next_question"]));
-    let selectedOption = { questionId, optionIndex };
-    if (selecting) {
-      setChosenOptions(chosenOptions.concat(selectedOption));
-      console.log(chosenOptions.concat(selectedOption));
-      if (parseInt(option["next_question"]) == -1) {
+    console.log("selected" + selected);
+    console.log("option", option);
+    if (selected) {
+      setSelectedOption(option);
+      setNextButtonVisibility(true);
+      console.log(option.severity_level);
+      setSelectedOptionSeverity(parseInt(option.severity_level));
+      if (questionId == prePrompts.length - 1) {
         setComplete(true);
       }
-      setNextButtonVisibility(true);
     } else {
       console.log("removing index: ");
-      console.log(
-        chosenOptions.findIndex((removedOption) => {
-          return option === selectedOption;
-        })
-      );
-      // console.log(chosenOptions.indexOf(selectedOption))
-
-      chosenOptions.splice(
-        chosenOptions.findIndex((removedOption) => {
-          return option === selectedOption;
-        })
-      );
-      // setChosenOptions(chosenOptions.filter(removedOption => removedOption !== selectedOption))
-      setChosenOptions(chosenOptions);
+      setSelectedOption(undefined);
       setComplete(false);
-      // console.log(chosenOptions.filter(removedOption => removedOption !== selectedOption))
-      console.log(chosenOptions);
+      selected = false;
       setNextButtonVisibility(false);
     }
+  };
+
+  const calcSeverityScore = () => {
+    console.log("calculating severity score");
+    const level = severityLevels.find((level) => {
+      return (
+        severityScore >= parseInt(level.min_score) &&
+        severityScore <= parseInt(level.max_score)
+      );
+    });
+    if (!level) return;
+    setSeverityLevel(level);
+  };
+
+  const handleModalClose = async () => {
+    setShowModal(false);
+    await AsyncStorage.setItem("severityLevel", severityLevel!.id.toString());
+    navigation.navigate("ReportTasks", { reportName });
   };
 
   return (
@@ -151,28 +208,45 @@ const Quiz = ({ route, navigation }: Props) => {
           ></Icon>
         </Pressable>
       </View>
+
       <View style={styles.contentContainer}>
-        <View style={styles.questionContainer}>
-          <Text style={styles.questionText}>
-            Q. {QuestionsData[index]["question"]}
-          </Text>
-        </View>
-        <View style={styles.optionsContainer}>
-          {QuestionsData[index]["options"].map((option) => (
-            <Option
-              key={
-                index.toString() +
-                ", " +
-                QuestionsData[index]["options"].indexOf(option).toString()
-              }
-              questionId={index}
-              optionIndex={QuestionsData[index]["options"].indexOf(option)}
-              text={option.option_text}
-              option={option}
-              handle={handleOptionPress}
-            />
-          ))}
-        </View>
+        {prePrompts.length > 0 && index <= prePrompts.length - 1 && (
+          <>
+            <View style={styles.questionContainer}>
+              <Text style={styles.questionText}>
+                Q. {prePrompts[index]["question"]}
+              </Text>
+            </View>
+            <View style={styles.optionsContainer}>
+              {prePrompts[index]["options"].map((option) => (
+                <Option
+                  key={option.id}
+                  questionId={index}
+                  optionIndex={prePrompts[index]["options"].indexOf(option)}
+                  option={option}
+                  handle={handleOptionPress}
+                />
+              ))}
+            </View>
+          </>
+        )}
+        <Modal visible={showModal} transparent={true} animationType="slide">
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>
+                Your Severity Score is {severityScore}, {"\n"} making this
+                report a {severityLevel?.name} severity incident.
+              </Text>
+              <Text style={styles.modalText}></Text>
+              <Pressable
+                style={[styles.button, styles.buttonClose]}
+                onPress={() => handleModalClose()}
+              >
+                <Text style={styles.textStyle}>Next</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
         <View
           style={[
             styles.bottom,
@@ -181,7 +255,7 @@ const Quiz = ({ route, navigation }: Props) => {
             },
           ]}
         >
-          {index != 0 && (
+          {index != 0 && index <= prePrompts.length - 1 && (
             <TouchableOpacity
               style={styles.navigateButton}
               onPress={handlePrevPress}
@@ -209,6 +283,9 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "#fff",
     flex: 1,
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
   },
   headerContainer: {
     alignItems: "center",
@@ -285,6 +362,48 @@ const styles = StyleSheet.create({
   navigateText: {
     color: "white",
     fontSize: 18,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+  },
+  buttonOpen: {
+    backgroundColor: "#F194FF",
+  },
+  buttonClose: {
+    backgroundColor: "#2196F3",
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  modalText: {
+    fontSize: scale(16),
+    marginBottom: 15,
+    textAlign: "center",
   },
 });
 export default Quiz;
