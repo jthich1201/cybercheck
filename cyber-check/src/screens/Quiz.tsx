@@ -100,7 +100,6 @@ const Quiz = ({ route, navigation }: Props) => {
       prompt.options = options;
     }
     setPrePrompts(prompts);
-    console.log(prompts.length);
   };
 
   const getPrePromptOptions = async (id: string) => {
@@ -177,7 +176,7 @@ const Quiz = ({ route, navigation }: Props) => {
 
   const handleModalClose = async () => {
     setShowModal(false);
-    await AsyncStorage.setItem("severityLevel", severityLevel!.id.toString());
+    await AsyncStorage.setItem("severityLevel", severityLevel!.name);
     navigation.navigate("ReportTasks", { reportName });
   };
 
