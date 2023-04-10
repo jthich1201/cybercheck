@@ -27,6 +27,11 @@ const TaskDescription = ({ route, navigation }: Props) => {
   let currentUser = getUser();
   console.log(currentUser);
   const [descriptionText, setDescriptionText] = useState("");
+  const [descriptionTime, setDescriptionTime] = useState("");
+
+  
+  const now = new Date();
+  const timestamp = now.toLocaleString();
 
   const submitDescription = async () => {
     const description = descriptionText.trim();
@@ -90,6 +95,8 @@ const TaskDescription = ({ route, navigation }: Props) => {
           <Pressable style={styles.button} onPress={submitDescription}>
             <Text style={styles.buttonText}>Add Description</Text>
           </Pressable>
+          <Text>{timestamp}</Text>
+
         </View>
       </View>
     </SafeAreaView>
