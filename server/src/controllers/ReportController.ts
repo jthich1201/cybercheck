@@ -15,6 +15,13 @@ export const getReports = async (req: any, res:any) => {
     console.log(reportsList)
     return res.json(reportsList)
 }
+export const getSelectedReport = async (req: any, res:any) => {
+    console.log(req.params);
+    const {reportId} = req.params;
+    const selectedReport = await reportService.getSelectedReport(reportId);
+    console.log(selectedReport)
+    return res.json(selectedReport)
+}
 
 // export const saveChanges = async (req: any, res : any) => {
 //     const {name, incidentType, comment, description} = req.body;

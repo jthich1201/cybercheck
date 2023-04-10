@@ -82,6 +82,8 @@ const ReportTasks = ({ route, navigation }: Props) => {
   const createTasks = async () => {
     //create Task objects from reportPrompts
     let tasks: Task[] = [];
+    let reportuuid = uuidv4();
+
     if (user) var name = user.name;
     ReportPrompts.incidentReponse[0].prompts?.forEach((prompt) => {
       let task: Task = {
@@ -90,11 +92,12 @@ const ReportTasks = ({ route, navigation }: Props) => {
         assignee: name,
         createdAt: new Date(),
         updatedAt: new Date(),
-        reportId: uuidv4(),
+        reportId: reportuuid,
         completed: false,
       };
       tasks.push(task);
     });
+    await AsyncStorage.setItem("reportId", JSON.stringify(reportuuid));
     await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
     console.log(tasks);
     setTasks(tasks);

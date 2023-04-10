@@ -16,6 +16,12 @@ import { v4 as uuidv4 } from 'uuid';
     return result.rows;
   };
 
+  export const getSelectedReport = async(reportId: any ) => {
+    const result = await(incidentResponseDbPool.query("Select $1 FROM reports",
+      [reportId]));
+    return result;
+  };
+
   
     //  export const saveChanges = (name: string, incidentType: string, comment: string, description: string ) => {
     //   const id = uuidv4();
