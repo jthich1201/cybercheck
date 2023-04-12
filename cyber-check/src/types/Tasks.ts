@@ -1,6 +1,7 @@
 export interface Task {
     taskId: string;
     title: string;
+    taskDescription: string;
     assignee: string;
     createdAt: Date;
     updatedAt: Date;

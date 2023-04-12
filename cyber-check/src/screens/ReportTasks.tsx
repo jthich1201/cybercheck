@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Pressable,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
@@ -24,6 +25,10 @@ import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 import { getUser } from "../hooks/getUser";
 import { getReport } from "../hooks/getReport";
+import { getIpAddress } from "../hooks/getIpAddress";
+import axios from "axios";
+import { IncidentResponse, Prompt } from "../types/Prompts";
+import { Report } from "../types/Report";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -32,19 +37,16 @@ type RootStackParamList = {};
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
-type Prompt = {
-  id: number;
-  text: string;
-};
-
 const ReportTasks = ({ route, navigation }: Props) => {
   let { reportName } = route.params;
   const [completedTasks, setCompletedTasks] = useState(0);
   const [remainingTasks, setRemainingTasks] = useState(0);
   const [selectedIncident, setSelectedIncident] = useState("");
-  const [reportPrompts, setReportPrompts] = useState<Prompt[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const user = getUser();
+  const ipAddress = getIpAddress();
 
   useEffect(() => {
     const getSelectedIncident = async () => {
@@ -79,26 +81,54 @@ const ReportTasks = ({ route, navigation }: Props) => {
     });
   };
 
+  const getPrompts = async () => {
+    console.log("getting porompts");
+    try {
+      const data = await AsyncStorage.getItem("incidentResponse");
+      if (data == null) return;
+      const incidentResponse: IncidentResponse = JSON.parse(data);
+      // console.log(incidentResponse);
+      const url = `http://${ipAddress}:3001/Prompts/getPrompts/${incidentResponse.id}`;
+      const response = await axios.get(url);
+      const prompts: Prompt[] = response.data.rows;
+      let severity = await AsyncStorage.getItem("severityLevel");
+      if (severity == null) return;
+      const filteredPrompts = prompts.filter((prompt) => {
+        return prompt.severity === severity;
+      });
+      setPrompts(filteredPrompts);
+      return filteredPrompts;
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  };
+
   const createTasks = async () => {
-    //create Task objects from reportPrompts
-    let tasks: Task[] = [];
+    const fPrompts = await getPrompts();
+    console.log("Creating tasks");
+    const report = await AsyncStorage.getItem("report");
+    if (report == null) return;
+    const reportObj: Report = JSON.parse(report);
     if (user) var name = user.name;
-    ReportPrompts.incidentReponse[0].prompts?.forEach((prompt) => {
-      let task: Task = {
+    let taskObj: Task[] = [];
+    for (const prompt of fPrompts!) {
+      let tempTask: Task = {
         taskId: uuidv4(),
-        title: prompt.text,
+        title: prompt.title,
+        taskDescription: prompt.description,
         assignee: name,
         createdAt: new Date(),
         updatedAt: new Date(),
-        reportId: uuidv4(),
+        reportId: reportObj.reportId,
         completed: false,
       };
-      tasks.push(task);
-    });
-    await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
-    console.log(tasks);
-    setTasks(tasks);
-    setRemainingTasks(tasks.length);
+      taskObj.push(tempTask);
+    }
+    setTasks(taskObj);
+    await AsyncStorage.setItem("tasks", JSON.stringify(taskObj));
+    setRemainingTasks(taskObj.length);
+    setIsLoading(false);
   };
 
   return (
@@ -121,37 +151,39 @@ const ReportTasks = ({ route, navigation }: Props) => {
           <SaveAndSharePDF />
         </View>
         <View style={styles.tasksContainer}>
-          <FlatList
-            data={tasks}
-            renderItem={({ item }) => (
-              <View key={item.taskId} style={styles.taskContainer}>
-                <Checkbox
-                  getCheckboxStatus={getCheckboxStatus}
-                  taskId={item.taskId}
-                />
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("TaskDescription", {
-                      reportName,
-                      item,
-                    })
-                  }
-                  onLongPress={() =>
-                    navigation.navigate("TaskComment", {
-                      reportName,
-                      item,
-                    })
-                  }
-                  style={styles.taskTextContainer}
-                >
-                  <Text style={styles.taskText}>
-                    {item.title.substring(0, 70) + "..."}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            keyExtractor={(item) => item.taskId.toString()}
-          />
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : (
+            <FlatList
+              data={tasks}
+              renderItem={({ item }) => (
+                <View key={item.taskId} style={styles.taskContainer}>
+                  <Checkbox
+                    getCheckboxStatus={getCheckboxStatus}
+                    taskId={item.taskId}
+                  />
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate("TaskDescription", {
+                        reportName,
+                        item,
+                      })
+                    }
+                    onLongPress={() =>
+                      navigation.navigate("TaskComment", {
+                        reportName,
+                        item,
+                      })
+                    }
+                    style={styles.taskTextContainer}
+                  >
+                    <Text style={styles.taskText}>{item.title}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              keyExtractor={(item) => item.taskId.toString()}
+            />
+          )}
         </View>
       </SafeAreaView>
       <View style={styles.taskCountContainer}>
