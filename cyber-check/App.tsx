@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Signin from "./src/screens/SignIn";
 import RecentReportsScreen from "./src/screens/RecentReports";
 import ManageAccount from "./src/screens/ManageAccount";
+import ManageOrganization from "./src/screens/ManageOrganization";
 import SelectIncident from "./src/screens/SelectIncident";
 import Quiz from "./src/screens/Quiz";
 import ReportTasks from "./src/screens/ReportTasks";
@@ -47,6 +48,13 @@ const App = () => {
           <Stack.Screen
             name="ManageAccount"
             component={ManageAccount}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="ManageOrganization"
+            component={ManageOrganization}
             options={{
               headerShown: false,
             }}
