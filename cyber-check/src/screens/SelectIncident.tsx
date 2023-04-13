@@ -21,6 +21,8 @@ import { Report } from "../types/Report";
 import { getUser } from "../hooks/getUser";
 import { v4 as uuidv4 } from "uuid";
 import { getIpAddress } from "../hooks/getIpAddress";
+import { IncidentResponse } from "../types/Prompts";
+//import { IncidentResponse } from "../types/IncidentResponse";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -53,36 +55,62 @@ const SelectIncident = ({ navigation }: Props) => {
     if (selectedIncident != -1) {
       console.log("reached");
       let incident = getSelectedIncident(selectedIncident);
-      console.log(incident);
       setName(JSON.stringify(incident));
+      getIncidentResponse();
     }
   }, [selectedIncident, reportName]);
-  const IP = process.env.IP;
+
+  const getIncidentResponse = async () => {
+    const url = `http://${ipAddress}:3001/Prompts/getIncidentResponses`;
+    try {
+      const response = await axios.get(url);
+      const incidentResponses: IncidentResponse[] = response.data;
+      console.log(incidentResponses);
+      const match = incidentResponses.filter((incidentResponse) => {
+        return getSelectedIncident(selectedIncident).includes(
+          incidentResponse.incident_type
+        );
+      });
+      console.log(match);
+      await AsyncStorage.setItem("incidentResponse", JSON.stringify(match[0])); // store incident responses in async storage
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const createReport = async () => {
     const url = `http://${ipAddress}:3001/Reports/createReport`;
-    var name = "Anonymous";
-    if (user) name = user.name;
-    const report: Report = {
-      reportId: uuidv4(),
+    var userId = uuidv4();
+    if (user) userId = user.userId;
+    console.log(userId);
+    const report = {
       title: reportName,
-      creator: name,
-      createdAt: new Date(),
+      creator: userId,
       type: getSelectedIncident(selectedIncident),
       status: "Draft",
-      orgId: "1234",
-      groupId: "1234",
-      updatedAt: new Date(),
+      orgId: "cfd7a2b8-c2c8-11ed-afa1-0242ac120002",
+      groupId: "4ca004d4-c2b5-11ed-afa1-0242ac120002",
     };
-    axios
-      .post(url, report) //need to change backend api to match body fields
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    await AsyncStorage.setItem("report", JSON.stringify(report));
+    try {
+      const res = await axios.post(url, report);
+      const reportData = res.data[0];
+      console.log(reportData);
+      const createdReport: Report = {
+        reportId: reportData.report_id,
+        title: reportData.title,
+        creator: reportData.creator,
+        createdAt: reportData.created_at,
+        type: reportData.type,
+        status: reportData.status,
+        orgId: reportData.org_id,
+        groupId: reportData.group_id,
+        updatedAt: reportData.updated_at,
+      };
+      console.log(createdReport);
+      await AsyncStorage.setItem("report", JSON.stringify(createdReport));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -102,6 +130,7 @@ const SelectIncident = ({ navigation }: Props) => {
         <Pressable
           onPress={() => {
             console.log(reportName);
+            createReport();
             navigation.navigate("TeamCollab", { reportName });
           }}
           disabled={selectedIncident == -1 ? true : false}

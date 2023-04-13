@@ -27,20 +27,23 @@ const TaskComment = ({ navigation, route }: Props) => {
   const [description, setDescription] = useState("");
   const [completedDate, setCompletedDate] = useState("");
   const [completedUser, setCompletedUser] = useState("");
-  
+
   const [inputText, setInputText] = useState("");
   let currentUser = getUser();
   //let currentTask = getTask();
   const fetchDescription = async () => {
     try {
       //const response = await fetch(`http://192.168.1.3:3001/api/description?task_id=${currentTask?.taskId}`, {
-        const response = await fetch("http://192.168.1.3:3001/api/descriptions?task_id=edc85df0-c2d0-11ed-afa1-0242ac120003", {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        "http://192.168.1.3:3001/api/descriptions?task_id=edc85df0-c2d0-11ed-afa1-0242ac120003",
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
       const description = await response.json();
       setDescription(description?.description);
       setCompletedDate(description?.date_time);
@@ -52,7 +55,7 @@ const TaskComment = ({ navigation, route }: Props) => {
 
   useEffect(() => {
     try {
-    fetchDescription();
+      fetchDescription();
     } catch (error) {
       console.log(error);
     }
@@ -77,7 +80,7 @@ const TaskComment = ({ navigation, route }: Props) => {
           comment: comment,
           user_id: currentUser?.userId,
           //task_id: currentTask?.taskId
-          task_id: "edc85df0-c2d0-11ed-afa1-0242ac120003"
+          task_id: "edc85df0-c2d0-11ed-afa1-0242ac120003",
         }),
       });
       const result = await response.json();
@@ -105,16 +108,16 @@ const TaskComment = ({ navigation, route }: Props) => {
           <Icon name="arrow-back-ios" type="material"></Icon>
         </Pressable>
         <Text style={styles.header}>{reportName}</Text>
-        <Pressable  onPress={() => navigation.navigate("Submit", { reportName })}>
+        <Pressable
+          onPress={() => navigation.navigate("Submit", { reportName })}
+        >
           <Icon name="arrow-forward-ios" type="material"></Icon>
         </Pressable>
       </View>
 
       <View style={styles.contentContainer}>
         <View style={{ alignItems: "center", justifyContent: "center" }}>
-          <Text style={styles.taskName}>
-            {item.title.substring(0, 30) + "..."}
-          </Text>
+          <Text style={styles.taskName}>{item.title}</Text>
         </View>
         <TextInput
           multiline={true}
@@ -124,8 +127,9 @@ const TaskComment = ({ navigation, route }: Props) => {
           editable={false}
         />
         <Text style={styles.taskName}>
-          Completed by: {completedUser} {"\n"} On {new Date(completedDate).toLocaleDateString()}
-          </Text>
+          Completed by: {completedUser} {"\n"} On{" "}
+          {new Date(completedDate).toLocaleDateString()}
+        </Text>
         <View style={{}}>
           <Pressable style={styles.button} onPress={submitComment}>
             <Text style={styles.buttonText}>Add Comments</Text>
@@ -140,7 +144,6 @@ const TaskComment = ({ navigation, route }: Props) => {
           placeholder="comments..."
           value={commentText}
         />
-
       </View>
     </SafeAreaView>
   );

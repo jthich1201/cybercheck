@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Text, Pressable, Dimensions, ImageBackground, Platform, StatusBar, TouchableOpacity, Falsy, RecursiveArray, RegisteredStyle, ViewStyle } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Icon } from "@rneui/base";
+import { getUser } from "../hooks/getUser";
 
 type RootStackParamList = {};
 
@@ -11,7 +12,11 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
+
+
 const ManageAccount = ({ navigation }: Props) => {
+  let currentUser = getUser();
+
   return ( 
   <><SafeAreaView style={[
       styles.container]}>
@@ -38,29 +43,35 @@ const ManageAccount = ({ navigation }: Props) => {
         <View style={{flex: 1, paddingLeft: 10, paddingRight: 10}}>
           <Text style={{fontSize: 20, fontWeight: "bold"}} > Name: </Text>
           <Border style={{borderWidth:  1}}>
-            <Text style={{fontSize: 25, borderColor: "black", fontWeight: "300"}} > Keaton Wakefield </Text>
+            <Text style={{fontSize: 25, borderColor: "black", fontWeight: "300"}} > {currentUser?.name} </Text>
           </Border>  
         </View>
         <View style={{flex: 1, paddingLeft: 10, paddingRight: 10}}>
           <Text style={{fontSize: 20, fontWeight: "bold"}} > Email: </Text>
           <Border style={{borderWidth:  1}}>
-            <Text style={{fontSize: 25, borderColor: "black", fontWeight: "300"}} > keatonwakefield@csus.edu </Text>
+            <Text style={{fontSize: 25, borderColor: "black", fontWeight: "300"}} > {currentUser?.email} </Text>
           </Border>    
         </View>
         <View style={{flex: 1, paddingLeft: 10, paddingRight: 10}}>
-        <Text style={{fontSize: 20, fontWeight: "bold"}} > Orginization: </Text>
+        {/* <Text style={{fontSize: 20, fontWeight: "bold"}} > Orginization: </Text>
           <Border style={{borderWidth:  1}}>
             <Text style={{fontSize: 25, borderColor: "black", fontWeight: "300"}} > CSUS </Text>
-          </Border>         
+          </Border>          */}
         </View>
         </View>
         <View style={styles.container}>
-          <Pressable
-            style={styles.button}
-            onPress={() => {
-            navigation.navigate("RecentReportsTab", {});}}>
-              <Text style={styles.buttonText}>Reports</Text>
-          </Pressable>
+           {/* if the user is an admin, show the manage organization button, right now we have it set to
+           user so that we can do testing */}
+        {currentUser?.role == 'user' && (
+        <Pressable
+                style={styles.button}
+                onPress={() => {
+                  navigation.navigate("ManageOrganization", {});
+                }}
+  >
+    <Text style={styles.buttonText}>Manage Organization</Text>
+  </Pressable>
+)}
         </View>
       </SafeAreaView></> 
   );
@@ -106,7 +117,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 10,
-    width: windowWidth * 0.2,
+    width: windowWidth * .8,
     height: windowHeight * .05
   },
 });
