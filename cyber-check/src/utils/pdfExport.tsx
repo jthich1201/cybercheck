@@ -92,22 +92,8 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
-      {
-        <Pressable onPress={generatePdf}>
-          <Icon name="ios-share" type="material"></Icon>
-        </Pressable>
-      }
-      <StatusBar style="auto" />
-    </View>
+    <Pressable onPress={generatePdf}>
+      <Icon name="ios-share" type="material"></Icon>
+    </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 0.5,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

@@ -14,38 +14,44 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
 import { scale } from "react-native-size-matters";
 import { getUser } from "../hooks/getUser";
+import { getIpAddress } from "../hooks/getIpAddress";
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
-
 
 type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 const TaskDescription = ({ route, navigation }: Props) => {
-  let { reportName } = route.params;
-  let { item } = route.params;
+  let { reportName, item } = route.params;
   let currentUser = getUser();
   console.log(currentUser);
   const [descriptionText, setDescriptionText] = useState("");
+  const [descriptionTime, setDescriptionTime] = useState("");
+  const now = new Date();
+  const timestamp = now.toLocaleString();
+  const ipAddress = getIpAddress();
 
   const submitDescription = async () => {
     const description = descriptionText.trim();
     if (!description) {
       return;
     }
-
+    //change to axios.post
     try {
-      const response = await fetch("http://192.168.1.3:3001/api/descriptions", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          description: description,
-          user_id: currentUser?.userId
-        }),
-      });
+      const response = await fetch(
+        `http://${ipAddress}:3001/api/descriptions`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            description: description,
+            user_id: currentUser?.userId,
+          }),
+        }
+      );
       const result = await response.json();
 
       console.log(result);
@@ -77,7 +83,7 @@ const TaskDescription = ({ route, navigation }: Props) => {
       </View>
       <View style={styles.contentContainer}>
         <View style={styles.commentContainer}>
-          <Text style={styles.commentText}>{item.text}</Text>
+          <Text style={styles.commentText}>{item.taskDescription}</Text>
         </View>
         <TextInput
           multiline
@@ -90,6 +96,8 @@ const TaskDescription = ({ route, navigation }: Props) => {
           <Pressable style={styles.button} onPress={submitDescription}>
             <Text style={styles.buttonText}>Add Description</Text>
           </Pressable>
+          <Text>{timestamp}</Text>
+
         </View>
       </View>
     </SafeAreaView>
@@ -129,6 +137,7 @@ const styles = StyleSheet.create({
     color: "black",
     fontWeight: "bold",
     textAlign: "center",
+    padding: scale(10),
     fontSize: scale(16),
   },
   input: {

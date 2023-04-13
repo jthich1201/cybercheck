@@ -64,6 +64,9 @@ const RecentReportsTab = ({ navigation }: Props) => {
 
   const [showModal, setShowModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report>();
+  const now = new Date();
+  const created = selectedReport?.createdAt;
+  const uptime = now - created;
   const renderItem = ({ item }: { item: any }) => {
     const backgroundColor = item.id === selectedId ? "#DDDDDD" : "#D3D3D3";
     const color = item.id === selectedId ? "white" : "black";
@@ -132,6 +135,9 @@ const RecentReportsTab = ({ navigation }: Props) => {
           >
             <Text style={{ fontSize: 24 }}>{selectedReport.title}</Text>
             <Text style={{ fontSize: 24 }}>Type: {selectedReport.type}</Text>
+            <Text style={{ fontSize: 24 }}>Created On: {(selectedReport.createdAt).toString()}</Text> 
+            <Text style={{ fontSize: 24 }}>Updated On: {(selectedReport.updatedAt).toString()}</Text>
+            <Text style={{ fontSize: 24 }}>Uptime: {(uptime).toString()}</Text>
             <Text style={{ fontSize: 24 }}>
               Status: {selectedReport.status}
             </Text>
