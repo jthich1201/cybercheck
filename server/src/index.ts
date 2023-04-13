@@ -32,7 +32,6 @@ app.use('/Reports', reportRoute);
 app.use('/Prompts', promptRoute);
 app.use('/Tasks', taskRoute)
 
-
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at https://localhost:${port}`);
 });

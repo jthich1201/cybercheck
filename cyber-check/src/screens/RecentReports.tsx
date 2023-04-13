@@ -61,6 +61,7 @@ const RecentReportsTab = ({ navigation }: Props) => {
     </TouchableOpacity>
   );
   const [selectedId, setSelectedId] = useState("");
+
   const [showModal, setShowModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report>();
   const now = new Date();
@@ -148,6 +149,7 @@ const RecentReportsTab = ({ navigation }: Props) => {
       </Modal>
     </View>
   );
+  
 };
 
 const RecentReportsScreen = ({ navigation }: Props) => {
