@@ -5,7 +5,13 @@ const userData = require("../models/UserData");
 
 
 export const ReturnUserList = () => {
-  return userData;
+  try {
+    const result = incidentResponseDbPool.query("SELECT * FROM users");
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error getting user list");
+  }
 };
 
 export const SaveUserData = async (name: string, email: string, role: string, platform: string, platformId: string) => {
