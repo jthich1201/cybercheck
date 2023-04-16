@@ -1,11 +1,11 @@
 export interface Task {
-    taskId?: string;
+    task_id: string;
     title: string;
-    taskDescription: string;
+    task_description: string;
     assignee: string;
-    createdAt: Date;
-    updatedAt: Date;
-    reportId: string;
+    created_at: Date;
+    updated_at: Date;
+    report_id: string;
     completed: boolean;
 }
 

@@ -82,7 +82,7 @@ const ReportTasks = ({ route, navigation }: Props) => {
   const getCheckboxStatus = (checked: boolean, taskId: string): void => {
     console.log(`checked: ${checked}, taskId: ${taskId}`);
     tasks.find((task) => {
-      if (task.taskId === taskId) {
+      if (task.task_id === taskId) {
         console.log(checked);
         task.completed = checked ? true : false;
         if (checked) {
@@ -120,6 +120,7 @@ const ReportTasks = ({ route, navigation }: Props) => {
   };
 
   const createTasks = async () => {
+    const url = `http://${ipAddress}:3001/Tasks/createTask`;
     const fPrompts = await getPrompts();
     console.log("Creating tasks");
     const report = await AsyncStorage.getItem("report");
@@ -128,17 +129,17 @@ const ReportTasks = ({ route, navigation }: Props) => {
     if (user) var name = user.name;
     let taskObj: Task[] = [];
     for (const prompt of fPrompts!) {
-      let tempTask: Task = {
-        taskId: uuidv4(),
+      let tempTask = {
         title: prompt.title,
         taskDescription: prompt.description,
-        assignee: name,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         reportId: reportObj.report_id,
-        completed: false,
       };
-      taskObj.push(tempTask);
+      const res = await axios.post(url, tempTask);
+      console.log(res.data);
+      const task: Task = res.data[0] as Task;
+      console.log(task);
+
+      taskObj.push(task);
     }
     setTasks(taskObj);
     await AsyncStorage.setItem("tasks", JSON.stringify(taskObj));
@@ -174,10 +175,10 @@ const ReportTasks = ({ route, navigation }: Props) => {
             <FlatList
               data={tasks}
               renderItem={({ item }) => (
-                <View key={item.taskId} style={styles.taskContainer}>
+                <View key={item.task_id} style={styles.taskContainer}>
                   <Checkbox
                     getCheckboxStatus={getCheckboxStatus}
-                    taskId={item.taskId}
+                    taskId={item.task_id}
                   />
                   <TouchableOpacity
                     onPress={() =>
@@ -198,7 +199,7 @@ const ReportTasks = ({ route, navigation }: Props) => {
                   </TouchableOpacity>
                 </View>
               )}
-              keyExtractor={(item) => item.taskId.toString()}
+              keyExtractor={(item) => item.task_id.toString()}
             />
           )}
         </View>
