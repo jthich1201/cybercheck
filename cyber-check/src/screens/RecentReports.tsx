@@ -9,6 +9,7 @@ import {
   Dimensions,
   Platform,
   Modal,
+  ActivityIndicator,
 } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Icon } from "@rneui/base";
@@ -64,28 +65,59 @@ const RecentReportsTab = ({ navigation }: Props) => {
 
   const [showModal, setShowModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [created, setCreated] = useState("");
+  const [updated, setUpdated] = useState("");
+  const [upTime, setUpTime] = useState("");
   const now = new Date();
-  const created = selectedReport?.createdAt;
-  const uptime = now - created;
+
   const renderItem = ({ item }: { item: any }) => {
     const backgroundColor = item.id === selectedId ? "#DDDDDD" : "#D3D3D3";
     const color = item.id === selectedId ? "white" : "black";
+
     return (
       <Item
         item={item}
-        onPress={async() => {
+        onPress={async () => {
           console.log(item);
-          setSelectedId(item.reportId);
+          setSelectedId(item.report_id);
           setSelectedReport(item);
-          console.log(item.report_id);
-          if (item.report_id) {
-            await AsyncStorage.setItem("reportId", JSON.stringify(item.report_id));
-          }
+          await AsyncStorage.setItem(
+            "reportId",
+            JSON.stringify(item.report_id)
+          );
           let reportTitle = item.title;
-          navigation.navigate("ReportTasks", {reportTitle})
+          navigation.navigate("ReportTasks", { reportTitle });
         }}
-        onLongPress={() => {
+        onLongPress={async () => {
           setSelectedReport(item);
+          setSelectedId(item.report_id);
+          await AsyncStorage.setItem(
+            "reportId",
+            JSON.stringify(item.report_id)
+          );
+          const reportDate = new Date(item.created_at);
+          const updatedDate = new Date(item.updated_at);
+          let uptime = now.getTime() - reportDate.getTime();
+          const uptimeInSeconds = Math.floor(uptime / 1000);
+          const uptimeInMinutes = Math.floor(uptimeInSeconds / 60);
+          const uptimeInHours = Math.floor(uptimeInMinutes / 60);
+          const uptimeInDays = Math.floor(uptimeInHours / 24);
+          setCreated(
+            `${reportDate.getMonth()}/${reportDate.getDate()}/${reportDate.getFullYear()}`
+          );
+          setUpdated(
+            `${updatedDate.getMonth()}/${updatedDate.getDate()}/${updatedDate.getFullYear()}`
+          );
+          console.log(
+            `${updatedDate.getMonth()}/${updatedDate.getDate()}/${updatedDate.getFullYear()}`
+          );
+          const uptimeString = `${uptimeInDays} days, ${
+            uptimeInHours % 24
+          } hours, ${uptimeInMinutes % 60} minutes, and ${
+            uptimeInSeconds % 60
+          } seconds`;
+          setUpTime(uptimeString);
           setShowModal(true);
         }}
         backgroundColor={{ backgroundColor }}
@@ -96,14 +128,14 @@ const RecentReportsTab = ({ navigation }: Props) => {
 
   const getReports = async () => {
     const url = `http://${ipAddress}:3001/Reports/getReports/487ce5ba-7717-4b9a-b59d-dfd91836f431`;
-    axios
-      .get(url, {})
-      .then((res) => {
-        setReports(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    try {
+      const res = await axios.get(url, {});
+      setReports(res.data);
+      await AsyncStorage.setItem("reports", JSON.stringify(res.data));
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -118,38 +150,49 @@ const RecentReportsTab = ({ navigation }: Props) => {
         setSearchPhrase={setSearchPhrase}
         setClicked={setClicked}
       ></SearchBar>
-      <View style={{ justifyContent: "center", alignItems: "center" }}>
-        <FlatList
-          data={reports}
-          columnWrapperStyle={styles.row}
-          numColumns={2}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.reportId}
-          extraData={selectedId}
-        />
-      </View>
-      <Modal visible={showModal} animationType="slide">
-        {selectedReport && (
-          <View
-            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-          >
-            <Text style={{ fontSize: 24 }}>{selectedReport.title}</Text>
-            <Text style={{ fontSize: 24 }}>Type: {selectedReport.type}</Text>
-            <Text style={{ fontSize: 24 }}>Created On: {(selectedReport.createdAt).toString()}</Text> 
-            <Text style={{ fontSize: 24 }}>Updated On: {(selectedReport.updatedAt).toString()}</Text>
-            <Text style={{ fontSize: 24 }}>Uptime: {(uptime).toString()}</Text>
-            <Text style={{ fontSize: 24 }}>
-              Status: {selectedReport.status}
-            </Text>
-            <TouchableOpacity onPress={() => setShowModal(false)}>
-              <Text style={{ color: "blue", marginTop: 16 }}>Close</Text>
-            </TouchableOpacity>
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <>
+          <View style={{ justifyContent: "center", alignItems: "center" }}>
+            <FlatList
+              data={reports}
+              columnWrapperStyle={styles.row}
+              numColumns={2}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.report_id}
+              extraData={selectedId}
+            />
           </View>
-        )}
-      </Modal>
+          <Modal visible={showModal} animationType="slide">
+            {selectedReport && (
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ fontSize: 24 }}>{selectedReport.title}</Text>
+                <Text style={{ fontSize: 24 }}>
+                  Type: {selectedReport.type}
+                </Text>
+                <Text style={{ fontSize: 24 }}>Created On: {created}</Text>
+                <Text style={{ fontSize: 24 }}>Updated On: {updated}</Text>
+                <Text style={{ fontSize: 24 }}>Uptime: {upTime}</Text>
+                <Text style={{ fontSize: 24 }}>
+                  Status: {selectedReport.status}
+                </Text>
+                <TouchableOpacity onPress={() => setShowModal(false)}>
+                  <Text style={{ color: "blue", marginTop: 16 }}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </Modal>
+        </>
+      )}
     </View>
   );
-  
 };
 
 const RecentReportsScreen = ({ navigation }: Props) => {

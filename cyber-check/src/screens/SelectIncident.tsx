@@ -96,18 +96,22 @@ const SelectIncident = ({ navigation }: Props) => {
       const reportData = res.data[0];
       console.log(reportData);
       const createdReport: Report = {
-        reportId: reportData.report_id,
+        report_id: reportData.report_id,
         title: reportData.title,
         creator: reportData.creator,
-        createdAt: reportData.created_at,
+        created_at: reportData.created_at,
         type: reportData.type,
         status: reportData.status,
-        orgId: reportData.org_id,
-        groupId: reportData.group_id,
-        updatedAt: reportData.updated_at,
+        org_id: reportData.org_id,
+        group_id: reportData.group_id,
+        updated_at: reportData.updated_at,
       };
       console.log(createdReport);
       await AsyncStorage.setItem("report", JSON.stringify(createdReport));
+      await AsyncStorage.setItem(
+        "reportId",
+        JSON.stringify(createdReport.report_id)
+      );
     } catch (error) {
       console.log(error);
     }

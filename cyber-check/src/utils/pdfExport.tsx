@@ -17,28 +17,31 @@ import { Icon } from "@rneui/base";
 import { Report } from "../types/Report";
 import { getIpAddress } from "../hooks/getIpAddress";
 import axios from "axios";
+import { getReport } from "../hooks/getReport";
 
 export default function App() {
-  let [name, setName] = useState("");
-  let [reportName, setReportName] = useState("");
-  const [incidentType, setIncidentType] = useState("");
-  const ipAddress = getIpAddress();  
-  let reportId = AsyncStorage.getItem("reportId");
-  var report: Report[] = [];
+  const [name, setName] = useState("");
+  const [report, setReport] = useState<Report>();
+  const ipAddress = getIpAddress();
+  const reportId = getReport();
+
   useEffect(() => {
-    const getReport = async () => {
+    if (reportId) {
       getSelectedReport(reportId);
-    };
-    getReport();
-  }, []);
+    } else {
+      console.log("noid");
+    }
+  }, [reportId]);
+
   const getSelectedReport = async (data: any) => {
-    const url = `http://${ipAddress}:3001/Reports/getSelectedReport/2ee62d6e-53e4-4b05-8884-a57429e0b191`;
+    const url = `http://${ipAddress}:3001/Reports/getSelectedReport/${data}`;
     console.log("attempting report gather");
     axios
       .get(url, {})
       .then((res) => {
         console.log("report was gathered with success");
-        report = res.data;
+        console.log(res.data[0]);
+        setReport(res.data[0]);
       })
       .catch((err) => {
         console.log("pdf creation error");
@@ -48,16 +51,19 @@ export default function App() {
 
   const user = getUser();
 
-  const html = `
+  const html =
+    report &&
+    `
   <!DOCTYPE html>
   <html>
   <head>
 	  <title>My Report</title>
   </head>
   <body>
-	  <h1>${report[0].title}</h1>
-    <h2>${report[0].status}</h2>
-	  <p>Reporter: ${report[0].updatedAt}</p>
+	  <h1>${report!.title}</h1>
+    <h2>${report!.status}</h2>
+    <h5>Report Id: ${report.report_id}</h5>
+	  <p>Updated at: ${report!.updated_at}</p>
 	  <ul>
 		  <li>Item 1</li>
 		  <li>Item 2</li>

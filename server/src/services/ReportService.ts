@@ -17,9 +17,9 @@ export const getReports = async (userId: any) => {
 };
 
 export const getSelectedReport = async (reportId: any) => {
-  const result = await (incidentResponseDbPool.query("Select $1 FROM reports",
+  const result = await (incidentResponseDbPool.query("Select * FROM reports where report_id = $1",
     [reportId]));
-  return result;
+  return result.rows;
 };
 
 

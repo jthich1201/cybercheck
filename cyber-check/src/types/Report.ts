@@ -1,13 +1,13 @@
 export interface Report {
-    reportId: string;
+    report_id: string;
     title: string;
     creator: string;
-    createdAt: Date;
+    created_at: Date;
     type: string;
     status: string;
-    orgId: string;
-    groupId: string;
-    updatedAt: Date;
+    org_id: string;
+    group_id: string;
+    updated_at: Date;
 }
 
 //Maybe combine report managers and members tables with roles column

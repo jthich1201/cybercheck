@@ -1,17 +1,16 @@
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React from "react";
 import { Report } from "../types/Report";
 
 export const getReport = () => {
-    const [report, setReport] = React.useState<Report>();
+    const [reportId, setReportId] = useState();
 
     useEffect(() => {
         const getReport = async () => {
             try {
                 const value = await AsyncStorage.getItem("reportId");
-                if (value !== null) {
-                    setReport(JSON.parse(value));
+                if (value != null) {
+                    setReportId(JSON.parse(value));
                 }
             } catch (e) {
                 console.log(e);
@@ -19,7 +18,7 @@ export const getReport = () => {
             }
         };
         getReport();
-    }, [report]);
+    }, []);
 
-    return report;
+    return reportId;
 }
