@@ -22,16 +22,31 @@ import { getReport } from "../hooks/getReport";
 export default function App() {
   const [name, setName] = useState("");
   const [report, setReport] = useState<Report>();
-  const ipAddress = getIpAddress();
+  const [ipAddress, setIpAddress] = useState("");
   const reportId = getReport();
 
   useEffect(() => {
-    if (reportId) {
+    const getIp = async () => {
+      try {
+        const value = await AsyncStorage.getItem("ipAddress");
+        if (value !== null) {
+          setIpAddress(JSON.parse(value));
+        }
+      } catch (e) {
+        console.log(e);
+        return;
+      }
+    };
+    getIp();
+  }, []);
+
+  useEffect(() => {
+    if (reportId && ipAddress) {
       getSelectedReport(reportId);
     } else {
       console.log("noid");
     }
-  }, [reportId]);
+  }, [reportId, ipAddress]);
 
   const getSelectedReport = async (data: any) => {
     const url = `http://${ipAddress}:3001/Reports/getSelectedReport/${data}`;

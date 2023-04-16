@@ -67,11 +67,28 @@ const Quiz = ({ route, navigation }: Props) => {
   const [selectedOptionSeverity, setSelectedOptionSeverity] = useState(0);
   const [severityLevel, setSeverityLevel] = useState<SeverityLevel>();
   const [showModal, setShowModal] = useState(false);
-  const ipAddress = getIpAddress();
+  const [ipAddress, setIpAddress] = useState("");
 
   useEffect(() => {
-    getPrePrompts();
-    getSeverityLevels();
+    if (ipAddress) {
+      getPrePrompts();
+      getSeverityLevels();
+    }
+  }, [ipAddress]);
+
+  useEffect(() => {
+    const getIp = async () => {
+      try {
+        const value = await AsyncStorage.getItem("ipAddress");
+        if (value !== null) {
+          setIpAddress(JSON.parse(value));
+        }
+      } catch (e) {
+        console.log(e);
+        return;
+      }
+    };
+    getIp();
   }, []);
 
   const getSeverityLevels = async () => {

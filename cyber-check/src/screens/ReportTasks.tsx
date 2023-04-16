@@ -45,8 +45,23 @@ const ReportTasks = ({ route, navigation }: Props) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [ipAddress, setIpAddress] = useState("");
   const user = getUser();
-  const ipAddress = getIpAddress();
+
+  useEffect(() => {
+    const getIp = async () => {
+      try {
+        const value = await AsyncStorage.getItem("ipAddress");
+        if (value !== null) {
+          setIpAddress(JSON.parse(value));
+        }
+      } catch (e) {
+        console.log(e);
+        return;
+      }
+    };
+    getIp();
+  }, []);
 
   useEffect(() => {
     const getSelectedIncident = async () => {
@@ -61,8 +76,8 @@ const ReportTasks = ({ route, navigation }: Props) => {
       }
     };
     getSelectedIncident();
-    createTasks();
-  }, []);
+    if (ipAddress) createTasks();
+  }, [ipAddress]);
 
   const getCheckboxStatus = (checked: boolean, taskId: string): void => {
     console.log(`checked: ${checked}, taskId: ${taskId}`);
@@ -120,7 +135,7 @@ const ReportTasks = ({ route, navigation }: Props) => {
         assignee: name,
         createdAt: new Date(),
         updatedAt: new Date(),
-        reportId: reportObj.reportId,
+        reportId: reportObj.report_id,
         completed: false,
       };
       taskObj.push(tempTask);
@@ -143,7 +158,9 @@ const ReportTasks = ({ route, navigation }: Props) => {
       >
         <View style={styles.headerContainer}>
           <Pressable
-            onPress={() => navigation.navigate("RecentReportsTab", { reportName })}
+            onPress={() =>
+              navigation.navigate("RecentReportsTab", { reportName })
+            }
           >
             <Icon name="arrow-back-ios" type="material"></Icon>
           </Pressable>

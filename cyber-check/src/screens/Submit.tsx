@@ -14,7 +14,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
 import { scale } from "react-native-size-matters";
 import axios from "axios";
-import { getIpAddress } from "../hooks/getIpAddress";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -28,12 +28,27 @@ const Submit = ({ route, navigation }: Props) => {
   let { reportName } = route.params;
   let { item } = route.params;
   const [currentTime, setCurrentTime] = useState(new Date());
-  const ipAddress = getIpAddress();
-
+  const [ipAddress, setIpAddress] = useState("");
   const now = new Date();
   const timestamp = now.toLocaleString();
 
   useEffect(() => {
+    const getIp = async () => {
+      try {
+        const value = await AsyncStorage.getItem("ipAddress");
+        if (value !== null) {
+          setIpAddress(JSON.parse(value));
+        }
+      } catch (e) {
+        console.log(e);
+        return;
+      }
+    };
+    getIp();
+  }, []);
+
+  useEffect(() => {
+    if (!ipAddress) return;
     const url = `http://${ipAddress}:3001/Users/saveUsers`;
     const interval = setInterval(() => {
       setCurrentTime(new Date());
@@ -45,7 +60,7 @@ const Submit = ({ route, navigation }: Props) => {
         .catch((error) => console.log(error));
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [ipAddress]);
 
   return (
     <SafeAreaView

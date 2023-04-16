@@ -37,8 +37,7 @@ const RecentReportsTab = ({ navigation }: Props) => {
   const [searchPhrase, setSearchPhrase] = useState("");
   const [clicked, setClicked] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
-  const ipAddress = getIpAddress();
-
+  const [ipAddress, setIpAddress] = useState("");
   //const renderItem = ({ item }: { item: any }) => <Item title={item.title} />;
   const Item = ({
     item,
@@ -126,10 +125,32 @@ const RecentReportsTab = ({ navigation }: Props) => {
     );
   };
 
+  useEffect(() => {
+    const getIp = async () => {
+      try {
+        const value = await AsyncStorage.getItem("ipAddress");
+        if (value !== null) {
+          setIpAddress(JSON.parse(value));
+        }
+      } catch (e) {
+        console.log(e);
+        return;
+      }
+    };
+    getIp();
+  }, []);
+
+  useEffect(() => {
+    if (ipAddress) {
+      getReports();
+    }
+  }, [ipAddress]);
+
   const getReports = async () => {
     const url = `http://${ipAddress}:3001/Reports/getReports/487ce5ba-7717-4b9a-b59d-dfd91836f431`;
     try {
       const res = await axios.get(url, {});
+      console.log(res.data);
       setReports(res.data);
       await AsyncStorage.setItem("reports", JSON.stringify(res.data));
       setIsLoading(false);
@@ -137,10 +158,6 @@ const RecentReportsTab = ({ navigation }: Props) => {
       console.log(error);
     }
   };
-
-  useEffect(() => {
-    getReports();
-  }, []);
 
   return (
     <View style={{ alignItems: "center" }}>
