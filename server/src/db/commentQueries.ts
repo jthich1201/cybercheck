@@ -1,5 +1,5 @@
 import { QueryResult } from "pg";
-import  pool  from '../config/dbConfigTest';
+import  pool  from '../db/incidentResponseDb';
 
 export const addComment = async (comment_id: string, comment: string, user_id: string, task_id: string) => {
   const client = await pool.connect();

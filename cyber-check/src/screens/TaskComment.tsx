@@ -13,6 +13,10 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Icon } from "@rneui/base";
 import { getUser } from "../hooks/getUser";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Description } from "../types/Tasks";
+
 
 type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
@@ -27,68 +31,73 @@ const TaskComment = ({ navigation, route }: Props) => {
   const [description, setDescription] = useState("");
   const [completedDate, setCompletedDate] = useState("");
   const [completedUser, setCompletedUser] = useState("");
-
+  const [ipAddress, setIpAddress] = useState("");
   const [inputText, setInputText] = useState("");
   let currentUser = getUser();
-  //let currentTask = getTask();
+
+  useEffect(() => {
+    const getIp = async () => {
+      try {
+        const value = await AsyncStorage.getItem("ipAddress");
+        if (value !== null) {
+          setIpAddress(JSON.parse(value));
+        }
+      } catch (e) {
+        console.log(e);
+        return;
+      }
+    };
+    getIp();
+  }, []);
+
+  useEffect(() => {
+    if (ipAddress) fetchDescription();
+  }, [ipAddress]);
+
   const fetchDescription = async () => {
     try {
-      //const response = await fetch(`http://192.168.1.3:3001/api/description?task_id=${currentTask?.taskId}`, {
-      const response = await fetch(
-        "http://192.168.1.3:3001/api/descriptions?task_id=edc85df0-c2d0-11ed-afa1-0242ac120003",
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const description = await response.json();
-      setDescription(description?.description);
-      setCompletedDate(description?.date_time);
-      setCompletedUser(description?.name);
+      console.log(item.task_id);
+      const url = `http://${ipAddress}:3001/api/descriptions?task_id={${item.task_id}}`;
+  
+      const res = await axios.get(url);
+      const currentDescription: Description = res.data;
+      console.log("description:", currentDescription);
+
+      setDescription(currentDescription?.description);
+      setCompletedDate(currentDescription?.date_time);
+      setCompletedUser(currentDescription?.name);
+      console.log("description:", description);
     } catch (error) {
       console.log(error);
     }
   };
 
-  useEffect(() => {
-    try {
-      fetchDescription();
-    } catch (error) {
-      console.log(error);
-    }
-
-    //console.log(description);
-  }, []);
-
   const submitComment = async () => {
+    
     const comment = commentText.trim();
+    console.log("comment: ", comment);
+    console.log("task_id: ", item.task_id);
+    console.log("user_id: ", currentUser?.userId);
+    console.log("ipAddress: ", ipAddress);
     if (!comment) {
       return;
     }
-
     try {
-      const response = await fetch("http://192.168.1.3:3001/api/comments", {
-        method: "POST",
-        headers: {
+      const response = await axios.post(`http://${ipAddress}:3001/api/comments`, 
+      {
+        comment: comment,
+        user_id: currentUser?.userId,
+        task_id: item.task_id,
+      },
+      {       
+      headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          comment: comment,
-          user_id: currentUser?.userId,
-          //task_id: currentTask?.taskId
-          task_id: "edc85df0-c2d0-11ed-afa1-0242ac120003",
-        }),
       });
-      const result = await response.json();
-      // handle response
-      console.log(result);
+      console.log("comments response data",response.data);
     } catch (error) {
-      // handle error
-      console.log(error);
+      console.log("error: ",error);
     }
   };
 
