@@ -26,6 +26,8 @@ import { Report } from "../types/Report";
 import { getIpAddress } from "../hooks/getIpAddress";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getReport } from "../hooks/getReport";
+import { getUser } from "../hooks/getUser";
+import { User } from "../types/User";
 
 const Tab = createBottomTabNavigator();
 type RootStackParamList = {};
@@ -147,7 +149,7 @@ const RecentReportsTab = ({ navigation }: Props) => {
   }, [ipAddress]);
 
   const getReports = async () => {
-    const url = `http://${ipAddress}:3001/Reports/getReports/487ce5ba-7717-4b9a-b59d-dfd91836f431`;
+    const url = `http://${ipAddress}:3001/Reports/getReports/d8402c9d-8d39-47ab-bd35-864b1f3f3bcb`;
     try {
       const res = await axios.get(url, {});
       console.log(res.data);
