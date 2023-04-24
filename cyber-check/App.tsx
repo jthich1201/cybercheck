@@ -12,13 +12,15 @@ import TeamCollab from "./src/screens/TeamCollab";
 import TaskComment from "./src/screens/TaskComment";
 import TaskDescription from "./src/screens/TaskDescription";
 import Submit from "./src/screens/Submit";
+import ManageUsers from "./src/screens/ManageUsers";
+import ManageGroups from "./src/screens/ManageGroups";
 
 import linking from "./src/constants/linking";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const Stack = createNativeStackNavigator();
 
 const App = () => {
- /* useEffect(() => {
+  /* useEffect(() => {
     const clearAsyncStorage = async () => {
       await AsyncStorage.clear();
     };
@@ -104,6 +106,20 @@ const App = () => {
           <Stack.Screen
             name="TaskDescription"
             component={TaskDescription}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="ManageUsers"
+            component={ManageUsers}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="ManageGroups"
+            component={ManageGroups}
             options={{
               headerShown: false,
             }}
