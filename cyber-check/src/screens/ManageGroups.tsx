@@ -27,7 +27,7 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
-const ManageOrganization = ({ navigation }: Props) => {
+const ManageGroups = ({ navigation }: Props) => {
   return (
     <SafeAreaView
       style={[
@@ -48,10 +48,7 @@ const ManageOrganization = ({ navigation }: Props) => {
       </View>
       <View style={styles.contentContainer}>
         <View style={styles.buttonContainer}>
-          <Pressable
-            style={styles.button}
-            onPress={() => navigation.navigate("ManageUsers")}
-          >
+          <Pressable style={styles.button}>
             <Text style={styles.buttonText}>Users</Text>
           </Pressable>
           <Pressable style={styles.button}>
@@ -113,4 +110,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ManageOrganization;
+export default ManageGroups;

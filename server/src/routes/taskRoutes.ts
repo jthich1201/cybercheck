@@ -5,7 +5,8 @@ const router = Router();
 
 
 router.post('/createTask', TaskController.createTask);
-router.get("/", TaskController.getTask)
+router.get("/getTask/:report_id", TaskController.getTask)
+router.post('/setTaskCompleted', TaskController.setTaskCompleted);
 
 
 

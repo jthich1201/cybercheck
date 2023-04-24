@@ -58,3 +58,8 @@ const getUser = async (email: string) => {
     return result.rows[0];
   }
 }
+
+export const getUsers = async () => {
+  const result = await incidentResponseDbPool.query("SELECT * FROM users");
+  return result.rows;
+}

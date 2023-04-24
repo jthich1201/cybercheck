@@ -2,9 +2,9 @@ import { saveDescription, getDescription } from "../services/descriptionService"
 import { Request, Response } from "express";
 
 export const addDescriptionController = async (req: Request, res: Response) => {
-    const { description, user_id } = req.body;
+    const { description, user_id, task_id } = req.body;
     try {
-      const descriptions = await saveDescription(description, user_id);
+      const descriptions = await saveDescription(description, user_id, task_id);
       res.status(201).json(descriptions);
     } catch (error) {
       console.error(error);

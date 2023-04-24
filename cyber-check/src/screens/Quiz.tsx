@@ -14,12 +14,21 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { getUser } from "../hooks/getUser";
 import { QuestionsData } from "../constants/QuestionsData";
 import { getIpAddress } from "../hooks/getIpAddress";
 import { PrePrompt, PrePromptOptions, SeverityLevel } from "../types/Prompts";
 import { scale } from "react-native-size-matters";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const { height, width } = Dimensions.get("window");
+import { IncidentResponse, Prompt } from "../types/Prompts";
+import { Report } from "../types/Report";
+import { Task } from "../types/Tasks";
+
+
+type RootStackParamList = {};
+
+type Props = NativeStackScreenProps<RootStackParamList>;
 
 const Option = (props: {
   handle: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
@@ -68,13 +77,15 @@ const Quiz = ({ route, navigation }: Props) => {
   const [severityLevel, setSeverityLevel] = useState<SeverityLevel>();
   const [showModal, setShowModal] = useState(false);
   const [ipAddress, setIpAddress] = useState("");
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [completedTasks, setCompletedTasks] = useState(0);
+  const [remainingTasks, setRemainingTasks] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (ipAddress) {
-      getPrePrompts();
-      getSeverityLevels();
-    }
-  }, [ipAddress]);
+  const user = getUser();
+    const [prompts, setPrompts] = useState<Prompt[]>([]);
+
+
 
   useEffect(() => {
     const getIp = async () => {
@@ -90,6 +101,13 @@ const Quiz = ({ route, navigation }: Props) => {
     };
     getIp();
   }, []);
+
+  useEffect(() => {
+    if (ipAddress) {
+      getPrePrompts();
+      getSeverityLevels();
+    }
+  }, [ipAddress]);
 
   const getSeverityLevels = async () => {
     const res = await axios.get(
@@ -135,6 +153,7 @@ const Quiz = ({ route, navigation }: Props) => {
     if (isComplete) {
       calcSeverityScore();
       setShowModal(true);
+      createTasks();
     }
     if (nextQuestionId != -1) {
       setNextButtonVisibility(false);
@@ -195,6 +214,57 @@ const Quiz = ({ route, navigation }: Props) => {
     setShowModal(false);
     await AsyncStorage.setItem("severityLevel", severityLevel!.name);
     navigation.navigate("ReportTasks", { reportName });
+  };
+
+  const getPrompts = async () => {
+    console.log("getting porompts");
+    try {
+      const data = await AsyncStorage.getItem("incidentResponse");
+      if (data == null) return;
+      const incidentResponse: IncidentResponse = JSON.parse(data);
+      // console.log(incidentResponse);
+      const url = `http://${ipAddress}:3001/Prompts/getPrompts/${incidentResponse.id}`;
+      const response = await axios.get(url);
+      const prompts: Prompt[] = response.data.rows;
+      let severity = await AsyncStorage.getItem("severityLevel");
+      if (severity == null) return;
+      const filteredPrompts = prompts.filter((prompt) => {
+        return prompt.severity === severity;
+      });
+      setPrompts(filteredPrompts);
+      return filteredPrompts;
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  };
+
+  const createTasks = async () => {
+    const url = `http://${ipAddress}:3001/Tasks/createTask`;
+    const fPrompts = await getPrompts();
+    console.log("Creating tasks");
+    const report = await AsyncStorage.getItem("report");
+    if (report == null) return;
+    const reportObj: Report = JSON.parse(report);
+    if (user) var name = user.name;
+    let taskObj: Task[] = [];
+    for (const prompt of fPrompts!) {
+      let tempTask = {
+        title: prompt.title,
+        taskDescription: prompt.description,
+        reportId: reportObj.report_id,
+      };
+      const res = await axios.post(url, tempTask);
+      console.log(res.data);
+      const task: Task = res.data[0] as Task;
+      console.log(task);
+
+      taskObj.push(task);
+    }
+    setTasks(taskObj);
+    await AsyncStorage.setItem("tasks", JSON.stringify(taskObj));
+    setRemainingTasks(taskObj.length);
+    setIsLoading(false);
   };
 
   return (

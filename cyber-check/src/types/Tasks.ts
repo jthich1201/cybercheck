@@ -10,11 +10,9 @@ export interface Task {
 }
 
 export interface Description {
-    descriptionId: string;
-    taskId: string;
     description: string;
-    createdAt: Date; //rename in db
-    userId: string; //do we need this?
+    date_time: string; //rename in db
+    name: string; //do we need this?
 }
 export interface Comment {
     commentId: string;

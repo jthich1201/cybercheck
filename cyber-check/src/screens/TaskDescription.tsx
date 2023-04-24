@@ -17,6 +17,7 @@ import { getUser } from "../hooks/getUser";
 import { getIpAddress } from "../hooks/getIpAddress";
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
+import axios from "axios";
 
 type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
@@ -30,33 +31,57 @@ const TaskDescription = ({ route, navigation }: Props) => {
   const now = new Date();
   const timestamp = now.toLocaleString();
   const ipAddress = getIpAddress();
+  console.log("item: ", item);
 
   const submitDescription = async () => {
     const description = descriptionText.trim();
     if (!description) {
       return;
     }
-    //change to axios.post
     try {
-      const response = await fetch(
+      
+      const response = await axios.post(
         `http://${ipAddress}:3001/api/descriptions`,
         {
-          method: "POST",
+          description: description,
+          user_id: currentUser?.userId,
+          task_id: item.task_id
+        },
+        {
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            description: description,
-            user_id: currentUser?.userId,
-          }),
         }
       );
-      const result = await response.json();
-
-      console.log(result);
+      console.log(response.data);
     } catch (error) {
-      // handle error
+      console.log(error);
+    }
+  };
+
+  const completedTask = async () => {
+    const description = descriptionText.trim();
+    if (!description) {
+      return;
+    }
+    try {
+      
+      const response = await axios.post(
+        `http://${ipAddress}:3001/Tasks/setTaskCompleted`,
+        {
+          task_id: item.task_id,
+          completed: true
+        },
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log(response.data);
+    } catch (error) {
       console.log(error);
     }
   };
@@ -83,7 +108,7 @@ const TaskDescription = ({ route, navigation }: Props) => {
       </View>
       <View style={styles.contentContainer}>
         <View style={styles.commentContainer}>
-          <Text style={styles.commentText}>{item.taskDescription}</Text>
+          <Text style={styles.commentText}>{item.task_description}</Text>
         </View>
         <TextInput
           multiline
@@ -93,9 +118,13 @@ const TaskDescription = ({ route, navigation }: Props) => {
           value={descriptionText}
         />
         <View style={{}}>
-          <Pressable style={styles.button} onPress={submitDescription}>
-            <Text style={styles.buttonText}>Add Description</Text>
-          </Pressable>
+        <Pressable style={styles.button} onPress={() => {
+          navigation.navigate("ReportTasks", { reportName, completedTaskBool: true });
+          submitDescription();
+          completedTask();
+        }}>
+  <Text style={styles.buttonText}>Add Description</Text>
+</Pressable>
           <Text>{timestamp}</Text>
 
         </View>
