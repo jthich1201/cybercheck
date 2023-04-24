@@ -11,24 +11,22 @@ import {
   Pressable,
   FlatList,
   ActivityIndicator,
+  Modal,
+  Alert,
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Icon } from "@rneui/themed";
-import { TaskList } from "../constants/taskList";
-import { ReportPrompts } from "../constants/reportPrompts";
 import Checkbox from "../components/Checkbox";
 import { scale } from "react-native-size-matters";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SaveAndSharePDF from "../utils/pdfExport";
 import { Task } from "../types/Tasks";
 import "react-native-get-random-values";
-import { v4 as uuidv4 } from "uuid";
 import { getUser } from "../hooks/getUser";
-import { getReport } from "../hooks/getReport";
-import { getIpAddress } from "../hooks/getIpAddress";
 import axios from "axios";
-import { IncidentResponse, Prompt } from "../types/Prompts";
 import { Report } from "../types/Report";
+import { Dropdown } from "react-native-element-dropdown";
+import { UserList } from "../types/User";
 
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
@@ -41,12 +39,13 @@ const ReportTasks = ({ route, navigation }: Props) => {
   let { reportName } = route.params;
   const [completedTasks, setCompletedTasks] = useState(0);
   const [remainingTasks, setRemainingTasks] = useState(0);
-  const [selectedIncident, setSelectedIncident] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [ipAddress, setIpAddress] = useState("");
+  const [open, setOpen] = useState(false);
   const user = getUser();
+  const [userList, setUserList] = useState<UserList[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserList>();
 
   useEffect(() => {
     const getIp = async () => {
@@ -64,19 +63,10 @@ const ReportTasks = ({ route, navigation }: Props) => {
   }, []);
 
   useEffect(() => {
-    const getSelectedIncident = async () => {
-      try {
-        const value = await AsyncStorage.getItem("selectedIncident");
-        console.log("executing getSelectedIncident");
-        if (value !== null) {
-          setSelectedIncident(value);
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    };
-    getSelectedIncident();
-    if (ipAddress) createTasks();
+    if (ipAddress) {
+      getTasks();
+      getUsers();
+    }
   }, [ipAddress]);
 
   const getCheckboxStatus = (checked: boolean, taskId: string): void => {
@@ -96,55 +86,49 @@ const ReportTasks = ({ route, navigation }: Props) => {
     });
   };
 
-  const getPrompts = async () => {
-    console.log("getting porompts");
-    try {
-      const data = await AsyncStorage.getItem("incidentResponse");
-      if (data == null) return;
-      const incidentResponse: IncidentResponse = JSON.parse(data);
-      // console.log(incidentResponse);
-      const url = `http://${ipAddress}:3001/Prompts/getPrompts/${incidentResponse.id}`;
-      const response = await axios.get(url);
-      const prompts: Prompt[] = response.data.rows;
-      let severity = await AsyncStorage.getItem("severityLevel");
-      if (severity == null) return;
-      const filteredPrompts = prompts.filter((prompt) => {
-        return prompt.severity === severity;
-      });
-      setPrompts(filteredPrompts);
-      return filteredPrompts;
-    } catch (error) {
-      console.log(error);
-      return [];
-    }
-  };
-
-  const createTasks = async () => {
-    const url = `http://${ipAddress}:3001/Tasks/createTask`;
-    const fPrompts = await getPrompts();
-    console.log("Creating tasks");
+  const getTasks = async () => {
+    const url = `http://${ipAddress}:3001/Tasks/getTask`;
+    console.log("Getting tasks");
     const report = await AsyncStorage.getItem("report");
-    if (report == null) return;
+    if (!report) {
+      console.log("No report found");
+      return null;
+    }
     const reportObj: Report = JSON.parse(report);
     if (user) var name = user.name;
     let taskObj: Task[] = [];
-    for (const prompt of fPrompts!) {
-      let tempTask = {
-        title: prompt.title,
-        taskDescription: prompt.description,
-        reportId: reportObj.report_id,
-      };
-      const res = await axios.post(url, tempTask);
-      console.log(res.data);
-      const task: Task = res.data[0] as Task;
-      console.log(task);
+    let tempTask = reportObj.report_id;
+    console.log(tempTask);
+    try {
+      const res = await axios.get(`${url}/${tempTask}`);
 
-      taskObj.push(task);
+      for (let i = 0; i < res.data.length; i++) {
+        const task: Task = res.data[i] as Task;
+        taskObj.push(task);
+      }
+      setTasks(taskObj);
+      console.log(tasks);
+      await AsyncStorage.setItem("tasks", JSON.stringify(taskObj));
+      setRemainingTasks(taskObj.length);
+      setIsLoading(false);
+    } catch (error) {
+      console.log("Error while fetching tasks:", error);
+      return null;
     }
-    setTasks(taskObj);
-    await AsyncStorage.setItem("tasks", JSON.stringify(taskObj));
-    setRemainingTasks(taskObj.length);
-    setIsLoading(false);
+  };
+
+  const getUsers = async () => {
+    const url = `http://${ipAddress}:3001/Users/getUserByGroup/4ca004d4-c2b5-11ed-afa1-0242ac120002`;
+    console.log("Getting tasks");
+    try {
+      const res = await axios.get(`${url}`);
+      console.log("res", res.data);
+      const users = res.data as UserList[];
+      setUserList(users);
+    } catch (error) {
+      console.log("Error while fetching users:", error);
+      return null;
+    }
   };
 
   return (
@@ -172,35 +156,79 @@ const ReportTasks = ({ route, navigation }: Props) => {
           {isLoading ? (
             <ActivityIndicator size="large" color="#0000ff" />
           ) : (
-            <FlatList
-              data={tasks}
-              renderItem={({ item }) => (
-                <View key={item.task_id} style={styles.taskContainer}>
-                  <Checkbox
-                    getCheckboxStatus={getCheckboxStatus}
-                    taskId={item.task_id}
-                  />
-                  <TouchableOpacity
-                    onPress={() =>
-                      navigation.navigate("TaskDescription", {
-                        reportName,
-                        item,
-                      })
-                    }
-                    onLongPress={() =>
-                      navigation.navigate("TaskComment", {
-                        reportName,
-                        item,
-                      })
-                    }
-                    style={styles.taskTextContainer}
-                  >
-                    <Text style={styles.taskText}>{item.title}</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-              keyExtractor={(item) => item.task_id.toString()}
-            />
+            <>
+              <FlatList
+                data={tasks}
+                renderItem={({ item }) => (
+                  <View key={item.task_id} style={styles.taskContainer}>
+                    <Checkbox
+                      getCheckboxStatus={getCheckboxStatus}
+                      taskId={item.task_id}
+                    />
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate("TaskDescription", {
+                          reportName,
+                          item,
+                        })
+                      }
+                      onLongPress={() =>
+                        navigation.navigate("TaskComment", {
+                          reportName,
+                          item,
+                        })
+                      }
+                      style={styles.taskTextContainer}
+                    >
+                      <Text style={styles.taskText}>{item.title}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ borderWidth: 1, marginLeft: scale(10) }}
+                      onPress={() => setOpen(true)}
+                    >
+                      <Text>Assign user</Text>
+                    </TouchableOpacity>
+                    <Modal
+                      animationType="slide"
+                      visible={open}
+                      onRequestClose={() => {
+                        Alert.alert("Modal has been closed.");
+                        setOpen(!open);
+                      }}
+                    >
+                      <View style={{ justifyContent: "center" }}>
+                        <View style={styles.incidentContainer}>
+                          <Text style={styles.incidentText}>Assign Users</Text>
+                        </View>
+                        <View style={styles.dropdownContainer}>
+                          <Dropdown
+                            style={styles.dropdown}
+                            placeholderStyle={styles.dropdownText}
+                            selectedTextStyle={styles.dropdownText}
+                            data={userList}
+                            maxHeight={300}
+                            labelField="name"
+                            valueField="id"
+                            placeholder="Select team..."
+                            searchPlaceholder="Search..."
+                            value={selectedUser}
+                            onChange={(item) => {
+                              setSelectedUser(item.user_id);
+                            }}
+                          />
+                          <View style={{ alignItems: "center" }}>
+                            <Pressable style={styles.button}>
+                              <Text style={styles.buttonText}>Add</Text>
+                            </Pressable>
+                          </View>
+                        </View>
+                      </View>
+                    </Modal>
+                  </View>
+                )}
+                keyExtractor={(item) => item.task_id.toString()}
+              />
+            </>
           )}
         </View>
       </SafeAreaView>
@@ -287,6 +315,46 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     overflowWrap: "break-word",
     wordWrap: "break-word",
+  },
+  incidentContainer: {
+    alignItems: "center",
+    marginTop: windowHeight * 0.1,
+  },
+  incidentText: {
+    color: "black",
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: 25,
+  },
+  dropdownContainer: {
+    minWidth: windowWidth * 0.8,
+    alignSelf: "center",
+    border: "1px solid black",
+    paddingTop: 15,
+  },
+  dropdownText: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  button: {
+    backgroundColor: "#007AFF",
+    padding: 10,
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 10,
+    boxShadow: "20px 20px 205px red",
+    elevation: 4,
+    width: windowWidth * 0.25,
+    height: 50,
+    shadowOffset: { width: -2, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    marginTop: windowHeight * 0.1,
   },
 });
 
