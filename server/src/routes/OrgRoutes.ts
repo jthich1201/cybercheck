@@ -1,14 +1,14 @@
 import Router from 'express-promise-router';
 const router = Router();
 
-const { OrgCotnroller } = require("../controllers");
+import { OrgController } from "../controllers";
 
-router.post("/createGroup", OrgCotnroller.createGroup);
-router.post("/createOrg", OrgCotnroller.createOrg);
-router.get("/orgs", OrgCotnroller.getOrgs);
-router.get("/groups", OrgCotnroller.getGroups);
-router.delete("/deleteGroup/:groupId", OrgCotnroller.deleteGroup);
-router.post("/addGroupUser", OrgCotnroller.addGroupUser);
-router.delete("/deleteGroupUser/:groupId/:userId", OrgCotnroller.deleteGroupUser);
+router.post("/createGroup", OrgController.createGroup);
+router.post("/createOrg", OrgController.createOrg);
+router.get("/orgs", OrgController.getOrgs);
+router.get("/groups", OrgController.getGroups);
+router.delete("/deleteGroup/:groupId", OrgController.deleteGroup);
+router.post("/addGroupUser", OrgController.addGroupUser);
+router.delete("/deleteGroupUser/:groupId/:userId", OrgController.removeGroupUser);
 
 module.exports = router;
