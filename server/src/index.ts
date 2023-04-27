@@ -20,10 +20,11 @@ app.get('/', (req: Request, res: Response) => {
 
 const userRoute = require("./routes/userRoutes");
 const commentsRoute = require("./routes/comments");
-const descriptionsRoute = require("./routes/Descriptions");
+const descriptionsRoute = require("./routes/descriptions");
 const reportRoute = require("./routes/reportRoutes")
 const promptRoute = require("./routes/promptRoutes");
 const taskRoute = require("./routes/taskRoutes");
+const orgRoute = require("./routes/OrgRoutes");
 
 app.use('/Users', userRoute);
 app.use("/api/comments", commentsRoute);
@@ -31,6 +32,7 @@ app.use("/api/descriptions", descriptionsRoute);
 app.use('/Reports', reportRoute);
 app.use('/Prompts', promptRoute);
 app.use('/Tasks', taskRoute)
+app.use('/Org', orgRoute);
 
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at https://localhost:${port}`);
