@@ -19,7 +19,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 const userRoute = require("./routes/userRoutes");
-const commentsRoute = require("./routes/Comments");
+const commentsRoute = require("./routes/comments");
 const descriptionsRoute = require("./routes/Descriptions");
 const reportRoute = require("./routes/reportRoutes")
 const promptRoute = require("./routes/promptRoutes");
