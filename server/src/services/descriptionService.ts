@@ -4,8 +4,9 @@ import { v4 as uuidv4 } from 'uuid';
 export const saveDescription = async (description: string, user_id: string, task_id: string) => {
   try {
     const id = uuidv4();
+    const completed = false;
     // const task_id = uuidv4();
-    const descriptions = await addDescription(id, description, user_id, task_id);
+    const descriptions = await addDescription(id, description, user_id, task_id, completed);
     return descriptions;
   } catch (error) {
     console.error(error);

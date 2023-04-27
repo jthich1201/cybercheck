@@ -1,13 +1,13 @@
 import { QueryResult } from "pg";
 import pool from '../db/incidentResponseDb';
 
-export const addDescription = async (description_id: string, description: string, user_id: string, task_id: string, completed: string) => {
+export const addDescription = async (description_id: string, description: string, user_id: string, task_id: string, completed: boolean) => {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
     const timestamp = new Date().toISOString();
-    const insertCommentQuery = `INSERT INTO descriptions (description_id, description, user_id, date_time, task_id) VALUES ($1,$2,$3,$4,$5) RETURNING *`;
-    const insertCommentResult: QueryResult = await client.query(insertCommentQuery, [description_id, description, user_id, timestamp, task_id]);
+    const insertCommentQuery = `INSERT INTO descriptions (description_id, description, user_id, date_time, task_id, completed) VALUES ($1,$2,$3,$4,$5, $6) RETURNING *`;
+    const insertCommentResult: QueryResult = await client.query(insertCommentQuery, [description_id, description, user_id, timestamp, task_id, completed]);
     await client.query("COMMIT");
     return insertCommentResult.rows[0];
   } catch (error) {
