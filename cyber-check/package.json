@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "jest"
   },
   "dependencies": {
     "@azure/msal-browser": "^2.33.0",
@@ -56,12 +57,15 @@
     "@babel/core": "^7.19.3",
     "@babel/traverse": "^7.21.4",
     "@babel/types": "^7.21.4",
+    "@types/jest": "^29.5.1",
     "@types/node": "^18.15.3",
     "@types/react": "~18.0.24",
     "@types/react-native": "~0.70.6",
     "@types/react-native-safari-view": "^2.0.5",
     "@types/react-navigation": "^3.4.0",
     "@types/uuid": "^9.0.1",
+    "jest": "^27.0.6",
+    "jest-cli": "^29.5.0",
     "typescript": "^4.6.3"
   },
   "private": true
