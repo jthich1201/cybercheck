@@ -10,6 +10,7 @@ import {
   Platform,
   Modal,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Icon } from "@rneui/base";
@@ -34,12 +35,15 @@ type RootStackParamList = {};
 type Props = NativeStackScreenProps<RootStackParamList>;
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
+var _ = require("lodash");
 
 const RecentReportsTab = ({ navigation }: Props) => {
   const [searchPhrase, setSearchPhrase] = useState("");
   const [clicked, setClicked] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [ipAddress, setIpAddress] = useState("");
+  const [query, setQuery] = useState("");
+  const [fullData, setFullData] = useState<Report[]>([]);
   //const renderItem = ({ item }: { item: any }) => <Item title={item.title} />;
   const Item = ({
     item,
@@ -154,6 +158,7 @@ const RecentReportsTab = ({ navigation }: Props) => {
       const res = await axios.get(url, {});
       console.log(res.data);
       setReports(res.data);
+      setFullData(res.data);
       await AsyncStorage.setItem("reports", JSON.stringify(res.data));
       setIsLoading(false);
     } catch (error) {
@@ -161,14 +166,58 @@ const RecentReportsTab = ({ navigation }: Props) => {
     }
   };
 
+  const renderHeader = () => {
+    return (
+      <View
+        style={{
+          backgroundColor: "#fff",
+          padding: 10,
+          borderWidth: 1,
+          borderColor: "black",
+          marginVertical: 10,
+          borderRadius: 10,
+        }}
+      >
+        <TextInput
+          autoCapitalize="none"
+          autoCorrect={false}
+          clearButtonMode="always"
+          value={query}
+          onChangeText={(queryText) => handleSearch(queryText)}
+          placeholder="Search"
+          style={{ backgroundColor: "#fff", paddingHorizontal: 20 }}
+        />
+      </View>
+    );
+  };
+
+  const handleSearch = (text: string) => {
+    const formattedQuery = text.toLowerCase();
+    const filteredData = _.filter(fullData, (report: Report) => {
+      console.log(report);
+      return contains(report, formattedQuery);
+    });
+    console.log("fd", filteredData);
+    setReports(filteredData);
+    setQuery(text);
+  };
+
+  const contains = (report: Report, query: string) => {
+    if (report.title.includes(query) || report.title.includes(query)) {
+      console.log("true");
+      return true;
+    }
+    return false;
+  };
+
   return (
     <View style={{ alignItems: "center" }}>
-      <SearchBar
+      {/* <SearchBar
         clicked={clicked}
         searchPhrase={searchPhrase}
         setSearchPhrase={setSearchPhrase}
         setClicked={setClicked}
-      ></SearchBar>
+      ></SearchBar> */}
       {isLoading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
@@ -176,6 +225,7 @@ const RecentReportsTab = ({ navigation }: Props) => {
           <View style={{ justifyContent: "center", alignItems: "center" }}>
             <FlatList
               data={reports}
+              ListHeaderComponent={renderHeader}
               columnWrapperStyle={styles.row}
               numColumns={2}
               renderItem={renderItem}
