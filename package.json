@@ -1,5 +1,5 @@
 {
   "devDependencies": {
-    "@types/jest": "^29.5.1"
+    "jest-cli": "^29.5.0"
   }
 }
