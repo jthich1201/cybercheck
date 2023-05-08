@@ -11,9 +11,18 @@ export const createReport = async (title: string, creator: string, type: string,
 
 
 export const getReports = async (userId: any) => {
-  const result = await (incidentResponseDbPool.query("Select * from reports where report_id in (Select report_id from report_members where user_id = $1)",
+  const groupsManaged = await (incidentResponseDbPool.query("select group_id from group_managers where user_id = $1", [userId]));
+  console.log("Checking to see group manager status...");
+  if (groupsManaged.rows.length >= 1) {
+    console.log("user is a group manager")
+    const result = await (incidentResponseDbPool.query("select * from reports where group_id in (select group_id from group_managers where user_id = $1)", [userId]));
+    return result.rows;
+  }
+  else {
+    const result = await (incidentResponseDbPool.query("Select * from reports where report_id in (Select report_id from report_members where user_id = $1)",
     [userId]));
-  return result.rows;
+    return result.rows;
+  }
 };
 
 export const getSelectedReport = async (reportId: any) => {
