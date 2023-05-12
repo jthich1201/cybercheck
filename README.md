@@ -110,7 +110,8 @@ Install Node.js and npm (Node Package Manager) from the official Node.js website
 
 Ensure that Git is installed on your machine. You can download it from the official Git website ([https://git-scm.com/downloads](https://git-scm.com/downloads "https://git-scm.com/downloads")). 
 
-Clone the Repository: Open a terminal or command prompt. 
+Clone the Repository: 
+Open a terminal or command prompt. 
 Navigate to the desired directory where you want to clone the repository. 
 Execute the following command to clone the repository: 
 ```
@@ -123,21 +124,54 @@ Execute the following command to install the required dependencies:
 npm install 
 ```
 
-Setup: 
-Open GitBash Terminal in VSCode.
-Navigate to server folder. 
-Execute the following command to the server:
+Environment Setup: 
+Open first GitBash Terminal in VSCode and navigate to cyber-check folder. 
+Execute the following commands to start the Application:
+```
+cd cyber-check
+```
 ```
 npm install 
+```
+```
+npm start 
+```
+Open second GitBash Terminal in VSCode and navigate to the server folder. 
+Execute the following commands to run the server: 
+```
+cd server
+```
+```
+npm install
 ```
 ```
 npm run build
 ```
 ```
-npm run dev 
+npm run dev
 ```
-Open second GitBash Terminal in VSCode and navigate to cyber-check folder. 
-Execute the following command to the server: 
+Open third GitBash Terminal in VSCode and navigate to cyber-check folder. 
+Execute the following command to run test scripts on App:
+```
+cd cyber-check
+```
+```
+npm install
+```
+```
+npx jest
+```
+Open fourth GitBash Terminal in VSCode and navigate to esrver folder. 
+Execute the following command to run test scripts on server:
+```
+cd server
+```
+```
+npm install
+```
+```
+npx jest
+```
 
 <h3>Developer Instructions</h3>
 
