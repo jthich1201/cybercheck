@@ -103,7 +103,7 @@ https://www.youtube.com/watch?v=MxWZPzcXCzI&ab_channel=MueedKhalid
 
 <a href="https://ibb.co/s5Xsxrr"><img src="https://i.ibb.co/pWk4Vpp/Screenshot-2023-05-12-at-1-39-39-AM.png" alt="Screenshot-2023-05-12-at-1-39-39-AM" border="0" height="500"></a> Generated Report
 
-<3>Testing</h3>
+<h3>Testing</h3>
 
 Prerequisites: 
 Install Node.js and npm (Node Package Manager) from the official Node.js website ([https://nodejs.org/](https://nodejs.org/ "https://nodejs.org/")). 
